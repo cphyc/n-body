@@ -12,3 +12,14 @@ args = parser.parse_args()
 
 
 if __name__ == '__main__':
+    # Read data as CSV
+    data = pd.read_csv(args.output, delim_whitespace=True)
+
+    # Plot
+    plt.plot(data.t, data.Ep, label='$Ep$')
+    plt.plot(data.t, data.Ec, label='$Ec$')
+    plt.plot(data.t, data.E, label='$E_\mathrm{tot}$')
+
+    plt.grid('on')
+    plt.legend()
+    plt.show()
