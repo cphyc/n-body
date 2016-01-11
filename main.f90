@@ -44,8 +44,10 @@ program n_body
   !---------------------------------------------
   ! Compute time step
   !---------------------------------------------
-  dt = 1.e-2_xp * minval(abs(norm2(v,2)/norm2(a,2)))
-  !dt = 1.e-2_xp * minval(abs(r/v))
+  ! the timestep here is experimental and corresponds to 1% of the
+  ! dynamic time 
+  dt = 1.e-2_xp
+
   print *, dt
 
   !---------------------------------------------
