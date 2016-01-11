@@ -40,7 +40,7 @@ contains
     do i = 1, npoints
        do j = i+1, npoints
           vec = r(i, :) - r(j, :)
-          tmp = G / norm2(vec)**3
+          tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
           a(i, :) = a(i, :) - tmp*m(j)*vec
           a(j, :) = a(j, :) + tmp*m(i)*vec
        end do
@@ -60,7 +60,7 @@ contains
     do i = 1, npoints
        Ec = Ec + 0.5_xp * m(i) * norm2(v(i,:))**2
        do j = i+1, npoints
-          Ep = Ep - 2._xp*G*m(j)*m(i)/norm2(r(i, :) - r(j, :))
+          Ep = Ep - 2._xp*G*m(j)*m(i)/sqrt(norm2(r(i, :) - r(j, :))**2 + epsilon2)
        end do
 
     end do
