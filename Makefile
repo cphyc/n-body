@@ -1,5 +1,5 @@
 GC=gfortran
-CFLAGS=-Wall -Wextra -pedantic -std=f2008 -g -O2
+CFLAGS=-Wall -Wextra -pedantic -std=f2008 -g -O3
 LFLAGS=
 OUT=simul
 OUTG=gen
