@@ -24,7 +24,7 @@ contains
     integer                                                 :: i = 0
     
     do i = 1, npoints
-       read (un, *) x(i, 1), r(i, 2), r(i, 3), m(i)
+       read (un, *) r(i, 1), r(i, 2), r(i, 3), m(i)
     end do 
   
   end subroutine read_mxyz

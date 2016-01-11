@@ -6,12 +6,10 @@ program n_body
   implicit none
 
   real(kind = xp), dimension(:), allocatable :: m
-  real(kind = xp), dimension(3, :), allocatable :: r, v, a
-  real(kind = xp) :: d3
+  real(kind = xp), dimension(:, :), allocatable :: r, v, a
   integer :: npoints
   integer :: iter = 0
   integer :: maxiter = 10000
-  integer :: i, j
 
   
   !---------------------------------------------
@@ -48,7 +46,7 @@ program n_body
      !-------------------------
      ! Compute acceleration
      !-------------------------
-     call compute_force(r, m, a)
+     call compute_force(m, r, npoints, a)
   end do
 
   !---------------------------------------------
