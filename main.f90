@@ -50,7 +50,8 @@ program n_body
   !---------------------------------------------
   ! Loop over time
   !---------------------------------------------
-  open(unit=5, file='output.dat')
+  open(unit=11, file='output.dat')
+  open(unit=12, file='output_int.dat')
   do while (iter < maxiter)
      iter = iter + 1
      !-------------------------
@@ -65,10 +66,11 @@ program n_body
      t = t + dt
      if (mod(iter, dump_freq) == 0) then
         print*, 'Dump!'
-        call write_dump(5, iter, Ec, Ep, E, t, r, v)
+        call write_dump(11, 12, iter, Ec, Ep, E, t, r, v)
      end if
   end do
-  close(unit=5)
+  close(unit=11)
+  close(unit=12)
   !---------------------------------------------
   ! Deallocations
   !---------------------------------------------
