@@ -64,7 +64,7 @@ program n_body
      t = t + dt
      if (mod(dump_freq, iter) == 0) then
         print*, 'Dump!'
-        call write_dump(5, t, Ec, Ep, E, r, v)
+        call write_dump(5, Ec, Ep, E, t, r, v)
      end if
   end do
   close(unit=5)
