@@ -15,3 +15,5 @@ initial_conditions.o: initial_conditions.f90
 constants.o: constants.f90
 	$(GC) -c $^ $(CFLAGS)
 
+clean:
+	rm *.o *.mod $(OUT)
