@@ -50,7 +50,7 @@ program n_body
    ! Compute time step
    !---------------------------------------------
    ! the timestep here is experimental and corresponds to 1% of the
-   ! dynamic time 
+   ! dynamic time
    dt = 1.e-2_xp
    print *, dt
 
