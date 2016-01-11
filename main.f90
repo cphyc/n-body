@@ -7,7 +7,7 @@ program n_body
 
   real(kind = xp), dimension(:), allocatable :: m
   real(kind = xp), dimension(:, :), allocatable :: r, v, a
-  real(kind = xp) :: dt, Ec, Ep, E
+  real(kind = xp) :: t = 0._xp, dt, Ec, Ep, E
   integer :: iter = 0
   integer :: dump_freq = 1
   integer :: maxiter = 10000
@@ -44,7 +44,7 @@ program n_body
   ! Compute time step
   !---------------------------------------------
   dt = 1.e-2_xp * minval(v/a)
-  dt = 1.e-2_xp * minval(r/v)
+  !dt = 1.e-2_xp * minval(r/v)
 
   !---------------------------------------------
   ! Loop over time
@@ -61,6 +61,7 @@ program n_body
      call integrate(v, a, dt/2)
      call compute_energy(m, r, v, Ec, Ep, E)
 
+     t = t + dt
      if (mod(dump_freq, iter) == 0) then
         print*, 'Dump!'
         call write_dump(5, t, Ec, Ep, E, r, v)
