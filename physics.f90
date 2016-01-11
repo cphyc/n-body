@@ -51,11 +51,12 @@ contains
 
   end subroutine compute_force
 
-  subroutine compute_energy (m, r, v)
+  subroutine compute_energy (m, r, v, Ec, Ep, E)
     real(kind=xp), dimension(:), intent(in)    :: m
     real(kind=xp), dimension(:, :), intent(in) :: r, v
 
-    real(kind=xp) :: Ec, Ep, d
+    real(kind=xp), intent(out) :: Ec, Ep, E
+
     integer :: i, j
     Ec = 0._xp
     Ep = 0._xp
@@ -67,6 +68,7 @@ contains
 
     end do
 
+    E = Ec + Ep
   end subroutine compute_energy
 
   subroutine integrate(f, df, dt)

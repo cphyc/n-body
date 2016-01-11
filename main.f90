@@ -7,7 +7,7 @@ program n_body
 
   real(kind = xp), dimension(:), allocatable :: m
   real(kind = xp), dimension(:, :), allocatable :: r, v, a
-  real(kind = xp) :: dt
+  real(kind = xp) :: dt, Ec, Ep, E
   integer :: iter = 0
   integer :: dump_freq = 1
   integer :: maxiter = 10000
@@ -53,10 +53,10 @@ program n_body
      call integrate(r, v, dt)
      call compute_force(m, r, a)
      call integrate(v, a, dt/2)
-     call compute_energy(m, r, v)
+     call compute_energy(m, r, v, Ec, Ep, E)
 
      if (mod(dump_freq, iter) == 0) then
-        call write_dump(5, r, v)
+        call write_dump(5, t, Ec, Ep, E, r, v)
      end if
   end do
   close(unit=5)

@@ -27,13 +27,17 @@ contains
   
   end subroutine read_mpos
 
-  subroutine write_dump (un, r, v)
+  subroutine write_dump (un, Ec, Ep, E, t, r, v)
+    real(kind=xp), intent(in) :: Ep, Ec, E, t
     real(kind=xp), intent(in), dimension(:,:) :: r
     real(kind=xp), intent(in), dimension(:,:) :: v
     integer, intent(in) :: un
     
     integer :: i
+    write (un,*) 't', 'Ep', 'Ec', 'E'
+    write (un,*) t, Ep, Ec, E
 
+    write (un, *) 'x', 'y', 'z', 'vx', 'vy', 'vz'
     do i = 1, npoints
        write (un,*) r(i, 1), r(i, 2), r(i, 3), v(i, 1), v(i, 2), v(i, 3)
     end do
