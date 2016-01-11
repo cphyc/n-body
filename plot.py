@@ -22,6 +22,9 @@ if __name__ == '__main__':
 
     plt.yscale('log')
 
+    plt.xlabel('Time (arbitrary unit)')
+    plt.ylabel('Energy (arbitrary unit)')
+
     plt.grid('on')
     plt.legend()
     plt.show()
