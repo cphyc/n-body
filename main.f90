@@ -1,87 +1,87 @@
 program n_body
-  use io_tools
-  use constants
-  use physics
-  
-  implicit none
+   use io_tools
+   use constants
+   use physics
 
-  real(kind = xp), dimension(:), allocatable :: m
-  real(kind = xp), dimension(:, :), allocatable :: r, v, a
-  real(kind = xp) :: t = 0._xp, dt, Ec, Ep, E!, minEc, maxEc
-  integer :: iter = 0
-  integer :: dump_freq = 10
-  integer :: maxiter = 10000
+   implicit none
 
-  
-  !---------------------------------------------
-  ! Read number of points
-  !---------------------------------------------
-  open(unit=10, file='initial_conditions.dat')
-  call read_npoints(10)
-
-  !---------------------------------------------
-  ! Allocations
-  !---------------------------------------------
-  allocate(m(npoints))
-  allocate(r(npoints, 3))
-  allocate(v(npoints, 3))
-  allocate(a(npoints, 3))
+   real(kind = xp), dimension(:),    allocatable :: m
+   real(kind = xp), dimension(:, :), allocatable :: r, v, a
+   real(kind = xp) :: t = 0._xp, dt, Ec, Ep, E!, minEc, maxEc
+   integer :: iter = 0
+   integer :: dump_freq = 10
+   integer :: maxiter = 10000
 
 
-  !---------------------------------------------
-  ! Read initial positions
-  !---------------------------------------------
-  call read_mpos(10, m, r)
-  close(unit=10)
+   !---------------------------------------------
+   ! Read number of points
+   !---------------------------------------------
+   open(unit=10, file='initial_conditions.dat')
+   call read_npoints(10)
 
-  !---------------------------------------------
-  ! Compute initial speeds, accelerations, variables
-  !---------------------------------------------
-  call initial_speeds(r, v)
-  call compute_force(m, r, a)
-  call compute_initial_variables()
+   !---------------------------------------------
+   ! Allocations
+   !---------------------------------------------
+   allocate(m(npoints))
+   allocate(r(npoints, 3))
+   allocate(v(npoints, 3))
+   allocate(a(npoints, 3))
 
-  !---------------------------------------------
-  ! Compute time step
-  !---------------------------------------------
-  ! the timestep here is experimental and corresponds to 1% of the
-  ! dynamic time 
-  dt = 1.e-2_xp
+   !---------------------------------------------
+   ! Read initial positions
+   !---------------------------------------------
+   call read_mpos(10, m, r)
+   close(unit=10)
 
-  print *, dt
+   !---------------------------------------------
+   ! Compute initial speeds, accelerations, variables
+   !---------------------------------------------
+   call initial_speeds(r, v)
+   call compute_force(m, r, a)
+   call compute_initial_variables()
 
-  !---------------------------------------------
-  ! Loop over time
-  !---------------------------------------------
-  open(unit=11, file='output.dat')
-  open(unit=12, file='output_int.dat')
+   !---------------------------------------------
+   ! Compute time step
+   !---------------------------------------------
+   ! the timestep here is experimental and corresponds to 1% of the
+   ! dynamic time 
+   dt = 1.e-2_xp
+   print *, dt
 
-  call write_dump_headers(12)
+   !---------------------------------------------
+   ! Loop over time
+   !---------------------------------------------
+   open(unit=11, file='output.dat')
+   open(unit=12, file='output_int.dat')
 
-  do while (iter < maxiter)
-     iter = iter + 1
-     !-------------------------
-     ! Compute acceleration
-     !-------------------------
-     call integrate(v, a, dt/2)
-     call integrate(r, v, dt)
-     call compute_force(m, r, a)
-     call integrate(v, a, dt/2)
-     call compute_energy(m, r, v, Ec, Ep, E)
+   call write_dump_headers(12)
 
-     t = t + dt
-     if (mod(iter, dump_freq) == 0) then
-        print*, 'Dump!'
-        call write_dump(11, 12, iter, Ec, Ep, E, t, r, v)
-     end if
-  end do
-  close(unit=11)
-  close(unit=12)
-  !---------------------------------------------
-  ! Deallocations
-  !---------------------------------------------
-  deallocate(r)
-  deallocate(v)
-  deallocate(a)
+   do while (iter < maxiter)
+      iter = iter + 1
+      !-------------------------
+      ! Compute acceleration
+      !-------------------------
+      call integrate(v, a, dt/2)
+      call integrate(r, v, dt)
+      call compute_force(m, r, a)
+      call integrate(v, a, dt/2)
+      call compute_energy(m, r, v, Ec, Ep, E)
+
+      t = t + dt
+      if (mod(iter, dump_freq) == 0) then
+         print*, 'Dump!'
+         call write_dump(11, 12, iter, Ec, Ep, E, t, r, v)
+      end if
+   end do
+
+   close(unit=11)
+   close(unit=12)
+
+   !---------------------------------------------
+   ! Deallocations
+   !---------------------------------------------
+   deallocate(r)
+   deallocate(v)
+   deallocate(a)
 
 end program n_body
