@@ -35,7 +35,7 @@ contains
     
     integer :: i
     write (un, '(10(a16))') 'iter', 't', 'Ep', 'Ec', 'E'
-    write (un, '(10(e16.8e2))') iter, t, Ep, Ec, E
+    write (un, '(i16, 10(e16.8e2))') iter, t, Ep, Ec, E
 
     write (un, '(10(a16))') 'x', 'y', 'z', 'vx', 'vy', 'vz'
     do i = 1, npoints
