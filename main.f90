@@ -9,6 +9,7 @@ program n_body
   real(kind = xp), dimension(:, :), allocatable :: r, v, a
   integer :: npoints
   integer :: iter = 0
+  integer :: dump_freq = 1
   integer :: maxiter = 10000
 
   
@@ -41,6 +42,7 @@ program n_body
   !---------------------------------------------
   ! Loop over time
   !---------------------------------------------
+  open(unit=5, file='output.dat')
   do while (iter < maxiter)
      iter = iter + 1
      !-------------------------
@@ -51,8 +53,12 @@ program n_body
 
      call integration(v, a, dt/2)
      call integration(r, v, dt)
-  end do
 
+     if (mod(dump_freq, iter) == 0) then
+        call write_pos(5, r, npoints)
+     end if
+  end do
+  close(unit=5)
   !---------------------------------------------
   ! Deallocations
   !---------------------------------------------
