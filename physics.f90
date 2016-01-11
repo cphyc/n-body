@@ -36,16 +36,13 @@ contains
 
     integer :: i, j
 
-    ! FIXME: do optimisation using force is antisymmetric
     a = 0._xp
     do i = 1, npoints
-       do j = 1, npoints
-          if (j /= i) then
-             vec = r(i, :) - r(j, :)
-             tmp = G / norm2(vec)**3
-             a(i, :) = a(i, :) - tmp*m(j)*vec
-             a(j, :) = a(j, :) + tmp*m(i)*vec
-          end if
+       do j = i+1, npoints
+          vec = r(i, :) - r(j, :)
+          tmp = G / norm2(vec)**3
+          a(i, :) = a(i, :) - tmp*m(j)*vec
+          a(j, :) = a(j, :) + tmp*m(i)*vec
        end do
     end do
 
@@ -74,8 +71,8 @@ contains
   subroutine integrate(f, df, dt)
     implicit none
 
-    real(xp), dimension(npoints), intent(inout) :: f, df
-    real(xp),                     intent(in)    :: dt
+    real(xp), dimension(:, :), intent(inout) :: f, df
+    real(xp),                  intent(in)    :: dt
 
     f = f + df * dt
 
