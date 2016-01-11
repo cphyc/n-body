@@ -25,4 +25,18 @@ if __name__ == '__main__':
 
     plt.grid('on')
     plt.legend()
+
+    plt.figure()
+
+    deltaEc = data.Ec.max() - data.Ec.min()
+    deltaE = data.E - data.E.mean()
+
+    plt.plot(data.t, deltaE/deltaEc, label='$\\frac{E_\mathrm{tot} - \\overline{E_\mathrm{tot}}}{Ec_\mathrm{max} - Ec_\mathrm{min}}$')
+
+    plt.xlabel('Time (arbitrary unit)')
+    plt.ylabel('Total energy dissipation relative to max Ec variation')
+
+    plt.grid('on')
+    plt.legend()
+
     plt.show()
