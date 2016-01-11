@@ -5,7 +5,7 @@ module io_tools
 
   private
 
-  public :: read_npoints, read_mpos, write_dump
+  public :: read_npoints, read_mpos, write_dump, write_dump_headers
 contains
   
   subroutine read_npoints (un)
@@ -27,6 +27,13 @@ contains
   
   end subroutine read_mpos
 
+  subroutine write_dump_headers (un_all, un_int)
+    integer, intent(in) :: un_all, un_int
+
+    write (un_int, '(10(a16))') 'iter', 't', 'Ep', 'Ec', 'E'
+  end subroutine write_dump_headers
+
+  
   subroutine write_dump (un_all, un_int, iter, Ec, Ep, E, t, r, v)
     real(kind=xp), intent(in) :: Ep, Ec, E, t
     real(kind=xp), intent(in), dimension(:,:) :: r

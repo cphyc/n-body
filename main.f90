@@ -52,6 +52,8 @@ program n_body
   !---------------------------------------------
   open(unit=11, file='output.dat')
   open(unit=12, file='output_int.dat')
+
+  call write_dump_headers(11, 12)
   do while (iter < maxiter)
      iter = iter + 1
      !-------------------------
