@@ -7,7 +7,6 @@ program n_body
 
   real(kind = xp), dimension(:), allocatable :: m
   real(kind = xp), dimension(:, :), allocatable :: r, v, a
-  integer :: npoints
   integer :: iter = 0
   integer :: dump_freq = 1
   integer :: maxiter = 10000
@@ -17,7 +16,7 @@ program n_body
   ! Read number of points
   !---------------------------------------------
   open(unit=10, file='initial_conditions.dat')
-  call read_npoints(10, npoints)
+  call read_npoints(10)
 
   !---------------------------------------------
   ! Allocations
@@ -31,13 +30,13 @@ program n_body
   !---------------------------------------------
   ! Read initial positions
   !---------------------------------------------
-  call read_mpos(10, m, r, npoints)
+  call read_mpos(10, m, r)
   close(unit=10)
 
   !---------------------------------------------
   ! Compute initial speeds
   !---------------------------------------------
-  call initial_speeds(r, npoints, v)
+  call initial_speeds(r, v)
 
   !---------------------------------------------
   ! Loop over time
@@ -49,13 +48,13 @@ program n_body
      ! Compute acceleration
      !-------------------------
 
-     call compute_force(m, r, npoints, a)
+     call compute_force(m, r, a)
 
      call integration(v, a, dt/2)
      call integration(r, v, dt)
 
      if (mod(dump_freq, iter) == 0) then
-        call write_pos(5, r, npoints)
+        call write_dump(5, r, v, npoints)
      end if
   end do
   close(unit=5)
