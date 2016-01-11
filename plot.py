@@ -16,11 +16,9 @@ if __name__ == '__main__':
     data = pd.read_csv(args.output, delim_whitespace=True)
 
     # Plot
-    plt.plot(data.t, data.Ep.abs(), label='$Ep$')
-    plt.plot(data.t, data.Ec.abs(), label='$Ec$')
-    plt.plot(data.t, data.E.abs(), label='$E_\mathrm{tot}$')
-
-    plt.yscale('log')
+    plt.plot(data.t, data.Ep, label='$Ep$')
+    plt.plot(data.t, data.Ec, label='$Ec$')
+    plt.plot(data.t, data.E, label='$E_\mathrm{tot}$')
 
     plt.xlabel('Time (arbitrary unit)')
     plt.ylabel('Energy (arbitrary unit)')
