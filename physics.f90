@@ -60,7 +60,7 @@ contains
     do i = 1, npoints
        Ec = Ec + 0.5_xp * m(i) * norm2(v(i,:))**2
        do j = i+1, npoints
-          Ep = Ep - 2._xp*G*m(j)*m(i)/sqrt(norm2(r(i, :) - r(j, :))**2 + epsilon2)
+          Ep = Ep - G*m(j)*m(i)/sqrt(norm2(r(i, :) - r(j, :))**2 + epsilon2)
        end do
 
     end do
