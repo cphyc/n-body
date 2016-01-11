@@ -5,7 +5,7 @@ module physics
 
   private
 
-  public :: initial_speeds, compute_force, compute_energy, integrate
+  public :: initial_speeds, compute_force, compute_initial_variables, compute_energy, integrate
 contains
 
   subroutine initial_speeds (r, v)
@@ -20,7 +20,12 @@ contains
     v(:, 3) = 0._xp
 
   end subroutine initial_speeds
-
+  
+  subroutine compute_initial_variables()
+    ! We take 1/20th of the initial caracteristic distance
+    epsilon2 = npoints**(2._xp/3._xp) / 400._xp
+  end subroutine compute_initial_variables
+  
   subroutine compute_force (m, r, a)
     real(kind=xp), dimension(:), intent(in)     :: m
     real(kind=xp), dimension(:, :), intent(in)  :: r

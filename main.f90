@@ -9,7 +9,7 @@ program n_body
   real(kind = xp), dimension(:, :), allocatable :: r, v, a
   real(kind = xp) :: t = 0._xp, dt, Ec, Ep, E!, minEc, maxEc
   integer :: iter = 0
-  integer :: dump_freq = 1
+  integer :: dump_freq = 10
   integer :: maxiter = 10000
 
   
@@ -35,10 +35,11 @@ program n_body
   close(unit=10)
 
   !---------------------------------------------
-  ! Compute initial speeds, accelerations
+  ! Compute initial speeds, accelerations, variables
   !---------------------------------------------
   call initial_speeds(r, v)
   call compute_force(m, r, a)
+  call compute_initial_variables()
 
   !---------------------------------------------
   ! Compute time step

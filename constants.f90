@@ -4,10 +4,10 @@ module constants
   real(kind = xp), parameter    :: pi = 3.14159265359_xp
   real(kind = xp), parameter    :: G = 1._xp
 
-  real(kind = xp)    :: epsilon
+  real(kind = xp)    :: epsilon2
   integer            :: npoints
 
-  public :: xp, pi, G, epsilon, npoints
+  public :: xp, pi, G, epsilon2, npoints
   
 contains
   
