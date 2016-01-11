@@ -41,6 +41,12 @@ program n_body
   call compute_force(m, r, a)
 
   !---------------------------------------------
+  ! Compute time step
+  !---------------------------------------------
+  dt = 1.e-2_xp * minval(v/a)
+  dt = 1.e-2_xp * minval(r/v)
+
+  !---------------------------------------------
   ! Loop over time
   !---------------------------------------------
   open(unit=5, file='output.dat')
