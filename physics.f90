@@ -2,12 +2,10 @@ module physics
   use constants
   private
 
-  public :: initial_speeds, compute_force, integrate
+  public :: initial_speeds, compute_force, compute_energy, integrate
 contains
-  subroutine initial_speeds (r, npoints, v)
+  subroutine initial_speeds (r, v)
     real(kind = xp), intent(in), dimension(:, :) :: r
-    integer, intent(in) :: npoints
-
     real(kind = xp), intent(out), dimension(:, :) :: v
 
     integer :: i
@@ -28,10 +26,9 @@ contains
     
   end subroutine initial_speeds
 
-  subroutine compute_force (m, r, npoints, a)
+  subroutine compute_force (m, r, a)
     real(kind=xp), dimension(:), intent(in)     :: m
     real(kind=xp), dimension(:, :), intent(in)  :: r
-    integer, intent(in) :: npoints
     
     real(kind=xp), dimension(:, :), intent(out) :: a
     
@@ -61,7 +58,7 @@ contains
     Ec = 0._xp
     Ep = 0._xp
     do i = 1, npoints
-       Ec = 0.5_xp * m(i) * v(i,:)**2
+       Ec = 0.5_xp * m(i) * norm2(v(i,:))**2
        do j = i+1, npoints
           Ep = Ep - G*(m(j) + m(i))/norm2(r(i, :) - r(j, :))
        end do

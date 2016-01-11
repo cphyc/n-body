@@ -54,10 +54,9 @@ program n_body
      call compute_force(m, r, a)
      call integrate(v, a, dt/2)
      call compute_energy(m, r, v)
-  end do
 
      if (mod(dump_freq, iter) == 0) then
-        call write_dump(5, r, v, npoints)
+        call write_dump(5, r, v)
      end if
   end do
   close(unit=5)
