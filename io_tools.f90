@@ -34,12 +34,12 @@ contains
     integer, intent(in) :: un
     
     integer :: i
-    write (un,*) 't', 'Ep', 'Ec', 'E'
-    write (un,*) t, Ep, Ec, E
+    write (un, '(10(a16))') 't', 'Ep', 'Ec', 'E'
+    write (un, '(10(e16.8e2))') t, Ep, Ec, E
 
-    write (un, *) 'x', 'y', 'z', 'vx', 'vy', 'vz'
+    write (un, '(10(a16))') 'x', 'y', 'z', 'vx', 'vy', 'vz'
     do i = 1, npoints
-       write (un,*) r(i, 1), r(i, 2), r(i, 3), v(i, 1), v(i, 2), v(i, 3)
+       write (un, '(10(e16.8e2))') r(i, 1), r(i, 2), r(i, 3), v(i, 1), v(i, 2), v(i, 3)
     end do
     
   end subroutine write_dump
