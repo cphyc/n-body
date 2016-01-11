@@ -2,7 +2,7 @@ module physics
   use constants
   private
 
-  public :: initial_speeds, compute_force
+  public :: initial_speeds, compute_force, integrate
 contains
   subroutine initial_speeds (r, npoints, v)
     real(kind = xp), intent(in), dimension(:, :) :: r
@@ -70,5 +70,15 @@ contains
     
     
   end subroutine compute_energy
+  
+  subroutine integrate(f, df, dt)
+    implicit none
+
+    real(xp), dimension(npoints), intent(inout) :: f, df
+    real(xp),                     intent(in)    :: dt
+
+    f = f + df * dt
+
+  end subroutine integrate
 
 end module physics
