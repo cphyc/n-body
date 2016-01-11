@@ -21,18 +21,18 @@ contains
        v(i, 1) = -tmp*sin(theta)
        v(i, 2) = tmp*cos(theta)
        v(i, 3) = 0._xp
-       
+
     end do
-    
+
   end subroutine initial_speeds
 
   subroutine compute_force (m, r, a)
     real(kind=xp), dimension(:), intent(in)     :: m
     real(kind=xp), dimension(:, :), intent(in)  :: r
-    
+
     real(kind=xp), dimension(:, :), intent(out) :: a
-    
-    real(kind=xp), dimension(3) :: tmp
+
+    real(kind=xp), dimension(3) :: vec, tmp
 
     integer :: i, j
 
@@ -41,12 +41,14 @@ contains
     do i = 1, npoints
        do j = 1, npoints
           if (j /= i) then
-             tmp = G*m(j) / norm2(r(i, :) - r(j, :))**3
-             a(i, :) = a(i, :) + tmp*(r(j, :) - r(i, :))
+             vec = r(i, :) - r(j, :)
+             tmp = G / norm2(vec)**3
+             a(i, :) = a(i, :) - tmp*m(j)*vec
+             a(j, :) = a(j, :) + tmp*m(i)*vec
           end if
        end do
     end do
-    
+
   end subroutine compute_force
 
   subroutine compute_energy (m, r, v)
@@ -62,12 +64,11 @@ contains
        do j = i+1, npoints
           Ep = Ep - G*(m(j) + m(i))/norm2(r(i, :) - r(j, :))
        end do
-       
+
     end do
-    
-    
+
   end subroutine compute_energy
-  
+
   subroutine integrate(f, df, dt)
     implicit none
 
