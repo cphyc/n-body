@@ -15,7 +15,6 @@ contains
 
     do i = 1, npoints
        d = sqrt(r(i, 1)**2 + r(i, 2)**2)
-       print *, d
        theta = atan2(r(i, 2), r(i, 1))
        tmp = 1._xp/(2._xp*pi)*d
 
