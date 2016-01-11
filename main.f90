@@ -1,8 +1,7 @@
 program n_body
-  use initial_conditions
+  use io_tools
   use constants
   use physics
-  use integration
   
   implicit none
 
@@ -31,7 +30,7 @@ program n_body
   !---------------------------------------------
   ! Read initial positions
   !---------------------------------------------
-  call read_mxyz(10, m, r, npoints)
+  call read_mpos(10, m, r, npoints)
   close(unit=10)
 
   !---------------------------------------------

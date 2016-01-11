@@ -4,7 +4,7 @@ LFLAGS=
 OUT=simul
 OUTG=gen
 
-all: constants.o physics.o initial_conditions.o main.o
+all: constants.o physics.o io_tools.o main.o
 	$(GC) $(LFLAGS) $^ -o $(OUT)
 
 gen: constants.o main_gen.o
