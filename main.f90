@@ -5,8 +5,14 @@ program n_body
   
   implicit none
 
-  real(kind = xp), dimension(:), allocatable :: m, x, y, z, vx, vy, vz
+  real(kind = xp), dimension(:), allocatable :: m
+  real(kind = xp), dimension(3, :), allocatable :: r, v, a
+  real(kind = xp) :: d3
   integer :: npoints
+  integer :: iter = 0
+  integer :: maxiter = 10000
+  integer :: i, j
+
   
   !---------------------------------------------
   ! Read number of points
@@ -18,32 +24,38 @@ program n_body
   ! Allocations
   !---------------------------------------------
   allocate(m(npoints))
-  allocate(x(npoints))
-  allocate(y(npoints))
-  allocate(z(npoints))
-  allocate(vx(npoints))
-  allocate(vy(npoints))
-  allocate(vz(npoints))
+  allocate(r(npoints, 3))
+  allocate(v(npoints, 3))
+  allocate(a(npoints, 3))
+
 
   !---------------------------------------------
   ! Read initial positions
   !---------------------------------------------
-  call read_mxyz(10, m, x, y, z, npoints)
+  call read_mxyz(10, m, r, npoints)
   close(unit=10)
 
   !---------------------------------------------
   ! Compute initial speeds
   !---------------------------------------------
-  call initial_speeds(x, y, z, npoints, vx, vy, vz)
+  call initial_speeds(r, npoints, v)
+
+  !---------------------------------------------
+  ! Loop over time
+  !---------------------------------------------
+  do while (iter < maxiter)
+     iter = iter + 1
+     !-------------------------
+     ! Compute acceleration
+     !-------------------------
+     call compute_force(r, m, a)
+  end do
 
   !---------------------------------------------
   ! Deallocations
   !---------------------------------------------
-  deallocate(x)
-  deallocate(y)
-  deallocate(z)
-  deallocate(vx)
-  deallocate(vy)
-  deallocate(vz)
+  deallocate(r)
+  deallocate(v)
+  deallocate(a)
 
 end program n_body
