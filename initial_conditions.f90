@@ -5,32 +5,28 @@ module initial_conditions
 
   private
 
-  public :: read_initial_conditions
+  public :: read_npoints, read_xyz
 contains
   
-  subroutine read_initial_conditions (filename, r, mu, phi, npoints)
-    character(len = *), intent(in)                          :: filename
-    real(kind = xp), dimension(:), allocatable, intent(out) :: r, mu, phi
+  subroutine read_npoints (un, npoints)
+    integer, intent(in) :: un
     integer, intent(out)                                    :: npoints
 
-    integer                                                 :: un = 99
-    integer                                                 :: stat
-    integer                                                 :: i = 0
-
-    ! FIXME: check read status
-    open(unit=un, file=filename)
-
     read (un, *) npoints
-    ! FIXME: check allocation status
-    allocate (r(npoints), stat = stat)
-    allocate (mu(npoints), stat = stat)
-    allocate (phi(npoints), stat = stat)
+  end subroutine read_npoints
+  
+  subroutine read_xyz(un, x, y, z, npoints)
+    integer, intent(in) :: un
+    integer, intent(in) :: npoints
+    real(kind = xp), dimension(:), intent(out) :: x, y, z
+
+    integer                                                 :: i = 0
     
     do i = 1, npoints
-       read (un, *) r(i), mu(i), phi(i)
+       read (un, *) x(i), y(i), z(i)
     end do 
-    
-  end subroutine read_initial_conditions
+  
+  end subroutine read_xyz
 
   
 end module initial_conditions
