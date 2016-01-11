@@ -44,7 +44,7 @@ contains
     do i = 1, npoints
        do j = 1, npoints
           if (j /= i) then
-             tmp = G*m(j)*((r(i, :) - r(j, :))**2)**(1.5_xp)
+             tmp = G*m(j) / norm2(r(i, :) - r(j, :))**3
              a(i, :) = a(i, :) + tmp*(r(j, :) - r(i, :))
           end if
        end do
@@ -52,5 +52,23 @@ contains
     
   end subroutine compute_force
 
+  subroutine compute_energy (m, r, v)
+    real(kind=xp), dimension(:), intent(in)    :: m
+    real(kind=xp), dimension(:, :), intent(in) :: r, v
+
+    real(kind=xp) :: Ec, Ep, d
+    integer :: i, j
+    Ec = 0._xp
+    Ep = 0._xp
+    do i = 1, npoints
+       Ec = 0.5_xp * m(i) * v(i,:)**2
+       do j = i+1, npoints
+          Ep = Ep - G*(m(j) + m(i))/norm2(r(i, :) - r(j, :))
+       end do
+       
+    end do
+    
+    
+  end subroutine compute_energy
 
 end module physics
