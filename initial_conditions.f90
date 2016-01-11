@@ -23,7 +23,7 @@ contains
     integer                                                 :: i = 0
     
     do i = 1, npoints
-       read (un, *) m(i), x(i), y(i), z(i)
+       read (un, *) x(i), y(i), z(i), m(i)
     end do 
   
   end subroutine read_mxyz
