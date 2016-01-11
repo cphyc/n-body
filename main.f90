@@ -63,19 +63,21 @@ program n_body
    call write_dump_headers(12)
 
    do while (iter < maxiter)
-      iter = iter + 1
 
       call integrate(v, a, dt/2)  ! Compute v(t+dt/2)
       call integrate(r, v, dt)    ! Compute r(t+dt)
       call compute_force(m, r, a) ! Compute a(t+dt)
       call integrate(v, a, dt/2)  ! Compute v(t+dt)
-      call compute_energy(m, r, v, Ec, Ep, E)
 
       t = t + dt
+      iter = iter + 1
+
       if (mod(iter, dump_freq) == 0) then
          print*, 'Dump!'
+         call compute_energy(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
          call write_dump(11, 12, iter, Ec, Ep, E, t, r, v)
       end if
+
    end do
 
    close(unit=11)
