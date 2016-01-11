@@ -15,8 +15,9 @@ contains
 
     do i = 1, npoints
        d = sqrt(r(i, 1)**2 + r(i, 2)**2)
-       theta = atan2(r(i, 1), r(i, 2))
-       tmp = 1._xp/(6._xp*pi)*d
+       print *, d
+       theta = atan2(r(i, 2), r(i, 1))
+       tmp = 1._xp/(2._xp*pi)*d
 
        v(i, 1) = -tmp*sin(theta)
        v(i, 2) = tmp*cos(theta)
@@ -58,7 +59,7 @@ contains
     Ec = 0._xp
     Ep = 0._xp
     do i = 1, npoints
-       Ec = 0.5_xp * m(i) * norm2(v(i,:))**2
+       Ec = Ec + 0.5_xp * m(i) * norm2(v(i,:))**2
        do j = i+1, npoints
           Ep = Ep - G*(m(j) + m(i))/norm2(r(i, :) - r(j, :))
        end do
