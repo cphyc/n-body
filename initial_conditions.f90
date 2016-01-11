@@ -5,28 +5,28 @@ module initial_conditions
 
   private
 
-  public :: read_npoints, read_xyz
+  public :: read_npoints, read_mxyz
 contains
   
   subroutine read_npoints (un, npoints)
-    integer, intent(in) :: un
-    integer, intent(out)                                    :: npoints
+    integer, intent(in)  :: un
+    integer, intent(out) :: npoints
 
     read (un, *) npoints
   end subroutine read_npoints
   
-  subroutine read_xyz(un, x, y, z, npoints)
-    integer, intent(in) :: un
-    integer, intent(in) :: npoints
-    real(kind = xp), dimension(:), intent(out) :: x, y, z
+  subroutine read_mxyz(un, m, x, y, z, npoints)
+    integer, intent(in)                        :: un
+    integer, intent(in)                        :: npoints
+    real(kind = xp), dimension(:), intent(out) :: m, x, y, z
 
     integer                                                 :: i = 0
     
     do i = 1, npoints
-       read (un, *) x(i), y(i), z(i)
+       read (un, *) m(i), x(i), y(i), z(i)
     end do 
   
-  end subroutine read_xyz
+  end subroutine read_mxyz
 
   
 end module initial_conditions

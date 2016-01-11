@@ -5,7 +5,7 @@ program n_body
   
   implicit none
 
-  real(kind = xp), dimension(:), allocatable :: x, y, z, vx, vy, vz
+  real(kind = xp), dimension(:), allocatable :: m, x, y, z, vx, vy, vz
   integer :: npoints
   
   !---------------------------------------------
@@ -17,6 +17,7 @@ program n_body
   !---------------------------------------------
   ! Allocations
   !---------------------------------------------
+  allocate(m(npoints))
   allocate(x(npoints))
   allocate(y(npoints))
   allocate(z(npoints))
@@ -27,7 +28,7 @@ program n_body
   !---------------------------------------------
   ! Read initial positions
   !---------------------------------------------
-  call read_xyz(10, x, y, z, npoints)
+  call read_mxyz(10, m, x, y, z, npoints)
   close(unit=10)
 
   !---------------------------------------------
