@@ -2,6 +2,7 @@ program n_body
   use initial_conditions
   use constants
   use physics
+  use integration
   
   implicit none
 
@@ -46,7 +47,11 @@ program n_body
      !-------------------------
      ! Compute acceleration
      !-------------------------
+
      call compute_force(m, r, npoints, a)
+
+     call integration(v, a, dt/2)
+     call integration(r, v, dt)
   end do
 
   !---------------------------------------------
