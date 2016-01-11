@@ -33,6 +33,10 @@ program gen
         call random_number(x)
         call random_number(y)
         call random_number(z)
+        x = x*2._xp - 1_xp
+        y = y*2._xp - 1_xp
+        z = z*2._xp - 1_xp
+        
         radius = x**2 + y**2 + z**2
      end do
 
