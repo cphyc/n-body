@@ -43,8 +43,8 @@ program n_body
   !---------------------------------------------
   ! Compute time step
   !---------------------------------------------
-  dt = 1.e-2_xp * minval(v/a)
-  !dt = 1.e-2_xp * minval(r/v)
+  dt = 1.e-2_xp * minval(abs(v/a))
+  !dt = 1.e-2_xp * minval(abs(r/v))
 
   !---------------------------------------------
   ! Loop over time
