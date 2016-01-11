@@ -62,7 +62,7 @@ program n_body
      call compute_energy(m, r, v, Ec, Ep, E)
 
      t = t + dt
-     if (mod(dump_freq, iter) == 0) then
+     if (mod(iter, dump_freq) == 0) then
         print*, 'Dump!'
         call write_dump(5, Ec, Ep, E, t, r, v)
      end if
