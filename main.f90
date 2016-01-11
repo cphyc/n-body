@@ -7,6 +7,7 @@ program n_body
 
   real(kind = xp), dimension(:), allocatable :: m
   real(kind = xp), dimension(:, :), allocatable :: r, v, a
+  real(kind = xp) :: dt
   integer :: iter = 0
   integer :: dump_freq = 1
   integer :: maxiter = 10000
@@ -34,9 +35,10 @@ program n_body
   close(unit=10)
 
   !---------------------------------------------
-  ! Compute initial speeds
+  ! Compute initial speeds, accelerations
   !---------------------------------------------
   call initial_speeds(r, v)
+  call compute_force(m, r, a)
 
   !---------------------------------------------
   ! Loop over time
@@ -47,11 +49,12 @@ program n_body
      !-------------------------
      ! Compute acceleration
      !-------------------------
-
+     call integrate(v, a, dt/2)
+     call integrate(r, v, dt)
      call compute_force(m, r, a)
-
-     call integration(v, a, dt/2)
-     call integration(r, v, dt)
+     call integrate(v, a, dt/2)
+     call compute_energy(m, r, v)
+  end do
 
      if (mod(dump_freq, iter) == 0) then
         call write_dump(5, r, v, npoints)
