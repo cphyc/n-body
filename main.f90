@@ -7,7 +7,7 @@ program n_body
 
   real(kind = xp), dimension(:), allocatable :: m
   real(kind = xp), dimension(:, :), allocatable :: r, v, a
-  real(kind = xp) :: t = 0._xp, dt, Ec, Ep, E
+  real(kind = xp) :: t = 0._xp, dt, Ec, Ep, E!, minEc, maxEc
   integer :: iter = 0
   integer :: dump_freq = 1
   integer :: maxiter = 10000
@@ -53,7 +53,8 @@ program n_body
   open(unit=11, file='output.dat')
   open(unit=12, file='output_int.dat')
 
-  call write_dump_headers(11, 12)
+  call write_dump_headers(12)
+
   do while (iter < maxiter)
      iter = iter + 1
      !-------------------------

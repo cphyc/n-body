@@ -27,8 +27,8 @@ contains
   
   end subroutine read_mpos
 
-  subroutine write_dump_headers (un_all, un_int)
-    integer, intent(in) :: un_all, un_int
+  subroutine write_dump_headers (un_int)
+    integer, intent(in) :: un_int
 
     write (un_int, '(10(a16))') 'iter', 't', 'Ep', 'Ec', 'E'
   end subroutine write_dump_headers
