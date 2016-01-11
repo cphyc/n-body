@@ -8,13 +8,14 @@ module initial_conditions
   public :: read_initial_conditions
 contains
   
-  subroutine read_initial_conditions (filename, un)
-    character, intent(in) :: filename
-    integer, intent(in)   :: un
-    integer               :: stat
-    integer               :: npoints
-    real(kind = xp), dimension(:), allocatable :: r, mu, phi
-    integer :: i = 0
+  subroutine read_initial_conditions (filename, r, mu, phi, npoints)
+    character(len = *), intent(in)                          :: filename
+    real(kind = xp), dimension(:), allocatable, intent(out) :: r, mu, phi
+    integer, intent(out)                                    :: npoints
+
+    integer                                                 :: un = 99
+    integer                                                 :: stat
+    integer                                                 :: i = 0
 
     ! FIXME: check read status
     open(unit=un, file=filename)
