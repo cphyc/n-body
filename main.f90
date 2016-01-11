@@ -1,19 +1,48 @@
 program n_body
   use initial_conditions
   use constants
+  use physics
   
   implicit none
 
-  real(kind = xp), dimension(:), allocatable :: r, mu, phi
+  real(kind = xp), dimension(:), allocatable :: x, y, z, vx, vy, vz
   integer :: npoints
   
   !---------------------------------------------
-  ! Read initial conditions file
+  ! Read number of points
   !---------------------------------------------
-  call read_initial_conditions('initial_conditions.dat', r, mu, phi, npoints)
+  open(unit=10, file='initial_conditions.dat')
+  call read_npoints(10, npoints)
 
   !---------------------------------------------
-  ! 
+  ! Allocations
   !---------------------------------------------
+  allocate(x(npoints))
+  allocate(y(npoints))
+  allocate(z(npoints))
+  allocate(vx(npoints))
+  allocate(vy(npoints))
+  allocate(vz(npoints))
+
+  !---------------------------------------------
+  ! Read initial positions
+  !---------------------------------------------
+  call read_xyz(10, x, y, z, npoints)
+  close(unit=10)
+
+  !---------------------------------------------
+  ! Compute initial speeds
+  !---------------------------------------------
+  call initial_speeds(x, y, z, npoints, vx, vy, vz)
+
+  !---------------------------------------------
+  ! Deallocations
+  !---------------------------------------------
+  deallocate(x)
+  deallocate(y)
+  deallocate(z)
+  deallocate(vx)
+  deallocate(vy)
+  deallocate(vz)
 
 end program n_body
