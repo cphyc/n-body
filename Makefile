@@ -14,4 +14,4 @@ gen: constants.o main_gen.o
 	$(GC) $(CFLAGS) -c $<
 
 clean:
-	rm *.o *.mod $(OUT) $(OUTG)
+	rm -f *.o *.mod $(OUT) $(OUTG)
