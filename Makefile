@@ -2,21 +2,16 @@ GC=gfortran
 CFLAGS=-Wall -Wextra -pedantic -std=f2008 -g -O2
 LFLAGS=
 OUT=simul
+OUTG=gen
 
 all: constants.o physics.o initial_conditions.o main.o
-	$(GC) $^ $(LFLAGS) -o $(OUT)
+	$(GC) $(LFLAGS) $^ -o $(OUT)
 
-main.o: main.f90
-	$(GC) -c $^ $(CFLAGS)
+gen: constants.o main_gen.o
+	$(GC) $(LFLAGS) $^ -o $(OUTG)
 
-initial_conditions.o: initial_conditions.f90
-	$(GC) -c $^ $(CFLAGS)
-
-constants.o: constants.f90
-	$(GC) -c $^ $(CFLAGS)
-
-physics.o: physics.f90
-	$(GC) -c $^ $(CFLAGS)
+%.o: %.f90
+	$(GC) $(CFLAGS) -c $<
 
 clean:
-	rm *.o *.mod $(OUT)
+	rm *.o *.mod $(OUT) $(OUTG)
