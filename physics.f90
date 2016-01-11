@@ -13,16 +13,16 @@ contains
 
       real(kind = xp), dimension(:, :), intent(in)  :: r
       real(kind = xp), dimension(:, :), intent(out) :: v
-  
+
       real(kind = xp) :: omega
-  
+
       omega = 0.5_xp / pi
       v(:, 1) =   omega * r(:, 2)
       v(:, 2) = - omega * r(:, 1)
       v(:, 3) = 0._xp
- 
+
    end subroutine initial_speeds
-   
+
    subroutine compute_initial_variables()
       implicit none
 
@@ -30,18 +30,18 @@ contains
       epsilon2 = npoints**(2._xp/3._xp) / 400._xp
 
    end subroutine compute_initial_variables
-   
+
    subroutine compute_force (m, r, a)
       implicit none
 
       real(kind=xp), dimension(:),    intent(in)  :: m
       real(kind=xp), dimension(:, :), intent(in)  :: r
-  
+
       real(kind=xp), dimension(:, :), intent(out) :: a
-  
+
       real(kind=xp), dimension(3) :: vec, tmp
       integer :: i, j
-  
+
       a = 0._xp
 
       do i = 1, npoints
@@ -57,17 +57,17 @@ contains
          end do
 
       end do
- 
+
    end subroutine compute_force
- 
+
    subroutine compute_energy (m, r, v, Ec, Ep, E)
       implicit none
 
       real(kind=xp), dimension(:),    intent(in) :: m
       real(kind=xp), dimension(:, :), intent(in) :: r, v
-     
+
       real(kind=xp), intent(out) :: Ec, Ep, E
-     
+
       integer :: i, j
 
       Ec = 0._xp
@@ -82,21 +82,21 @@ contains
             Ep = Ep - G * m(j) * m(i) / sqrt(norm2(r(i, :) - r(j, :))**2 + epsilon2)
 
          end do
-     
+
       end do
-     
+
       E = Ec + Ep
 
    end subroutine compute_energy
- 
+
    subroutine integrate(f, df, dt)
       implicit none
-  
+
       real(xp), intent(in) :: dt
       real(xp), dimension(:, :), intent(inout) :: f, df
-  
+
       f = f + df * dt
-  
+
    end subroutine integrate
- 
+
 end module physics
