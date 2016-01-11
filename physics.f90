@@ -1,28 +1,23 @@
 module physics
   use constants
+
+  implicit none
+
   private
 
   public :: initial_speeds, compute_force, compute_energy, integrate
 contains
+
   subroutine initial_speeds (r, v)
-    real(kind = xp), intent(in), dimension(:, :) :: r
-    real(kind = xp), intent(out), dimension(:, :) :: v
+    real(kind = xp), dimension(:, :), intent(in)  :: r
+    real(kind = xp), dimension(:, :), intent(out) :: v
 
-    integer :: i
-    real(kind = xp) :: d ! distance to the z axis
-    real(kind = xp) :: theta ! angle with x axis
-    real(kind = xp) :: tmp
+    real(kind = xp) :: omega
 
-    do i = 1, npoints
-       d = sqrt(r(i, 1)**2 + r(i, 2)**2)
-       theta = atan2(r(i, 2), r(i, 1))
-       tmp = 1._xp/(2._xp*pi)*d
-
-       v(i, 1) = -tmp*sin(theta)
-       v(i, 2) = tmp*cos(theta)
-       v(i, 3) = 0._xp
-
-    end do
+    omega = 0.5_xp / pi
+    v(:, 1) =   omega * r(:, 2)
+    v(:, 2) = - omega * r(:, 1)
+    v(:, 3) = 0._xp
 
   end subroutine initial_speeds
 
