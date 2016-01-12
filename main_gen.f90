@@ -10,15 +10,6 @@ program gen
    real(xp) :: radius
    real(xp) :: mass
 
-   ! Open file
-   open(unit=11, file="./input_parameters.dat", action="read", status="old", iostat=ios)
-   if (ios /= 0) stop "OPENING input_parameters.dat ERROR"
-
-   ! Read parameters
-   read(11,fmt=*) line, npoints
-
-   close(11)
-
    mass = 1._xp / npoints
 
    open(unit=12, file="initial_conditions.dat", action="write", iostat=ios)
