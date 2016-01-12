@@ -11,8 +11,8 @@ contains
    subroutine initial_speeds (r, v)
       implicit none
 
-      real(kind = xp), dimension(:, :), intent(in)  :: r
-      real(kind = xp), dimension(:, :), intent(out) :: v
+      real(kind = xp), intent(in)  :: r(:,:)
+      real(kind = xp), intent(out) :: v(:,:)
 
       real(kind = xp) :: omega
 
@@ -34,10 +34,10 @@ contains
    subroutine compute_force (m, r, a)
       implicit none
 
-      real(kind=xp), dimension(:),    intent(in)  :: m
-      real(kind=xp), dimension(:, :), intent(in)  :: r
+      real(kind=xp), intent(in)  :: m(:)
+      real(kind=xp), intent(in)  :: r(:,:)
 
-      real(kind=xp), dimension(:, :), intent(out) :: a
+      real(kind=xp), intent(out) :: a(:,:)
 
       real(kind=xp), dimension(3) :: vec, tmp
       integer :: i, j
@@ -102,8 +102,8 @@ contains
    subroutine compute_energy (m, r, v, Ec, Ep, E)
       implicit none
 
-      real(kind=xp), dimension(:),    intent(in) :: m
-      real(kind=xp), dimension(:, :), intent(in) :: r, v
+      real(kind=xp), intent(in) :: m(:,:)
+      real(kind=xp), intent(in) :: r(:,:), v(:,:)
 
       real(kind=xp), intent(out) :: Ec, Ep, E
 
@@ -133,7 +133,7 @@ contains
       implicit none
 
       real(xp), intent(in) :: dt
-      real(xp), dimension(:, :), intent(inout) :: f, df
+      real(xp), intent(inout) :: f(:,:), df(:,:)
 
       f = f + df * dt
 
