@@ -5,7 +5,7 @@ implicit none
 
 private
 
-public :: initial_speeds, compute_force, compute_force_omp, compute_initial_variables, compute_energy, integrate
+public :: initial_speeds, compute_force, compute_force_omp, compute_initial_variables, compute_energy, compute_energy_omp, integrate
 contains
 
    subroutine initial_speeds (r, v)
