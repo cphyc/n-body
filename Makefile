@@ -15,3 +15,6 @@ gen: constants.o main_gen.o
 
 clean:
 	rm -f *.o *.mod $(OUT) $(OUTG)
+
+watch:
+	bash autocompile.sh
