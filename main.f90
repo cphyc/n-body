@@ -34,7 +34,7 @@ program n_body
    !---------------------------------------------
    ! Compute time step as a fraction of dynamic time
    !---------------------------------------------
-   dt = 1.e-3_xp
+   dt = 1.e-2_xp
    print *, '# Simulation parameters'
    print *, '# dt', dt
    print *, '# npoints', npoints
