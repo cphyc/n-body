@@ -7,6 +7,7 @@ LFLAGS=-fopenmp
 #GC=ifort
 #CFLAGS=-warn all -std08 -02 -xHost -openmp
 #LFLAGS=-openmp
+
 OUT=simul
 OUTG=gen
 
