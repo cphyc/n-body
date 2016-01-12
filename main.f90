@@ -16,7 +16,7 @@ program n_body
    real(kind = xp) :: E                 ! Total energy
    integer         :: iter      = 0     ! Number of iterations ran
    integer         :: dump_freq = 10    ! Frequency at which the system is sampled
-   integer         :: maxiter   = 500   ! Maximum number of iterations
+   integer         :: maxtime = npoints/100 ! Maximum time (ad hoc)
 
    !---------------------------------------------
    ! Read initial positions
@@ -39,7 +39,7 @@ program n_body
    print *, '# Simulation parameters'
    print *, '# dt', dt
    print *, '# npoints', npoints
-   print *, '# maxiter', maxiter
+   print *, '# maxtime', maxtime
 
    !---------------------------------------------
    ! Open files for output, add headers
@@ -52,7 +52,7 @@ program n_body
    !---------------------------------------------
    ! Loop over time
    !---------------------------------------------
-   do while (iter < maxiter)
+   do while (t < maxtime)
 
       call integrate(v, a, dt/2)  ! Compute v(t+dt/2)
       call integrate(r, v, dt)    ! Compute r(t+dt)
@@ -64,7 +64,7 @@ program n_body
       iter = iter + 1
 
       if (mod(iter, dump_freq) == 0) then
-         print *, 'Dump', iter
+         print *, 'Dump', iter, t
          !call compute_energy(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
          call compute_energy_omp(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
          call write_dump(una, un, iter, Ec, Ep, E, t, r, v)
