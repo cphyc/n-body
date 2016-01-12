@@ -138,7 +138,7 @@ contains
             tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
 
             a(:, i) = a(:, i) - tmp*m(j)*vec
-            a(:, j) = a(:, i) + tmp*m(i)*vec
+            a(:, j) = a(:, j) + tmp*m(i)*vec
 
          end do
 
