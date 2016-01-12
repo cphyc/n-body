@@ -5,10 +5,9 @@ implicit none
 
 private
 
-public :: initial_speeds, compute_initial_variables, &
+public :: initial_speeds, integrate, integrate_omp, &
           compute_force, compute_force_omp, compute_force_omp_nn_1, &
-          compute_energy, compute_energy_omp, compute_energy_omp_nn_1, &
-          integrate, integrate_omp
+          compute_energy, compute_energy_omp, compute_energy_omp_nn_1
 
 contains
 
@@ -27,13 +26,29 @@ contains
 
    end subroutine initial_speeds
 
-   subroutine compute_initial_variables()
+   subroutine integrate(f, df, dt)
       implicit none
 
-      ! We take 1/20th of the initial caracteristic distance
-      epsilon2 = npoints**(2._xp/3._xp) / 400._xp
+      real(xp), intent(in) :: dt
+      real(xp), intent(inout) :: f(:,:), df(:,:)
 
-   end subroutine compute_initial_variables
+      f = f + df * dt
+
+   end subroutine integrate
+
+   subroutine integrate_omp(f, df, dt)
+      implicit none
+
+      real(xp), intent(in) :: dt
+      real(xp), intent(inout) :: f(:,:), df(:,:)
+
+      !$OMP PARALLEL
+      !$OMP WORKSHARE
+      f = f + df * dt
+      !$OMP END WORKSHARE
+      !$OMP END PARALLEL
+
+   end subroutine integrate_omp
 
    subroutine compute_force (m, r, a)
       implicit none
@@ -230,29 +245,5 @@ contains
      E = Ec + Ep
 
    end subroutine compute_energy_omp_nn_1
-
-   subroutine integrate(f, df, dt)
-      implicit none
-
-      real(xp), intent(in) :: dt
-      real(xp), intent(inout) :: f(:,:), df(:,:)
-
-      f = f + df * dt
-
-   end subroutine integrate
-
-   subroutine integrate_omp(f, df, dt)
-      implicit none
-
-      real(xp), intent(in) :: dt
-      real(xp), intent(inout) :: f(:,:), df(:,:)
-
-      !$OMP PARALLEL
-      !$OMP WORKSHARE
-      f = f + df * dt
-      !$OMP END WORKSHARE
-      !$OMP END PARALLEL
-
-   end subroutine integrate_omp
 
 end module physics
