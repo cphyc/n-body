@@ -132,7 +132,7 @@ contains
       !$OMP DO SCHEDULE(GUIDED)
       do i = 1, npoints
 
-         do j = i+1, npoints
+         do j = 1, i-1
 
             vec = r(:, i) - r(:, j)
             tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
@@ -231,7 +231,7 @@ contains
 
         Ec = Ec + 0.5_xp * m(i) * norm2(v(:,i))**2
 
-        do j = i+1, npoints
+        do j = 1, i-1
 
            Ep = Ep -  G * m(j) * m(i) / sqrt(norm2(r(:, i) - r(:, j))**2 + epsilon2)
 
