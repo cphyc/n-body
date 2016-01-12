@@ -5,7 +5,7 @@ module io_tools
 
    private
 
-   public :: read_npoints, read_mpos, write_dump, write_dump_headers
+   public :: read_mpos, write_dump, write_dump_headers
 contains
 
    subroutine read_mpos(u, m, r)
@@ -13,10 +13,10 @@ contains
 
       integer, intent(in) :: u
 
-      real(kind = xp), intent(out) :: m(:,:)
+      real(kind = xp), intent(out) :: m(:)
       real(kind = xp), intent(out) :: r(:,:)
 
-      integer :: i = 0
+      integer :: i
 
       do i = 1, npoints
          read (u, *) r(i, 1), r(i, 2), r(i, 3), m(i)

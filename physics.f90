@@ -102,7 +102,7 @@ contains
    subroutine compute_energy (m, r, v, Ec, Ep, E)
       implicit none
 
-      real(kind=xp), intent(in) :: m(:,:)
+      real(kind=xp), intent(in) :: m(:)
       real(kind=xp), intent(in) :: r(:,:), v(:,:)
 
       real(kind=xp), intent(out) :: Ec, Ep, E
