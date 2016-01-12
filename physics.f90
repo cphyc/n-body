@@ -145,7 +145,7 @@ contains
          do j = 1, npoints
 
             if (i /= j) then
-               Ep = Ep - G * m(j) * m(i) / sqrt(norm2(r(i, :) - r(j, :))**2 + epsilon2)
+               Ep = Ep - 0.5_xp * G * m(j) * m(i) / sqrt(norm2(r(i, :) - r(j, :))**2 + epsilon2)
             end if
 
          end do
