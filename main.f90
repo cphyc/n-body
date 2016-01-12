@@ -16,14 +16,7 @@ program n_body
    real(kind = xp) :: E                 ! Total energy
    integer         :: iter      = 0     ! Number of iterations ran
    integer         :: dump_freq = 10    ! Frequency at which the system is sampled
-   integer         :: maxiter   = 10000 ! Maximum number of iterations
-
-   real :: start_time, total_time
-
-   !---------------------------------------------
-   ! Start time
-   !---------------------------------------------
-   call cpu_time(start_time)
+   integer         :: maxiter   = 500   ! Maximum number of iterations
 
    !---------------------------------------------
    ! Read initial positions
@@ -43,7 +36,10 @@ program n_body
    ! Compute time step as a fraction of dynamic time
    !---------------------------------------------
    dt = 1.e-3_xp
-   print *, dt
+   print *, '# Simulation parameters'
+   print *, '# dt', dt
+   print *, '# npoints', npoints
+   print *, '# maxiter', maxiter
 
    !---------------------------------------------
    ! Open files for output, add headers
@@ -67,7 +63,7 @@ program n_body
       iter = iter + 1
 
       if (mod(iter, dump_freq) == 0) then
-         print*, 'Dump!'
+         print *, 'Dump', iter
          call compute_energy(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
          call write_dump(una, un, iter, Ec, Ep, E, t, r, v)
       end if
@@ -79,12 +75,5 @@ program n_body
    !---------------------------------------------
    close(un)
    close(una)
-
-   !---------------------------------------------
-   ! Elapsed time
-   !---------------------------------------------
-   call cpu_time(total_time)
-   total_time = total_time - start_time
-   print*, 'Elapsed time:', total_time
 
 end program n_body
