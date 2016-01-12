@@ -5,18 +5,18 @@ program n_body
 
    implicit none
 
-   real(kind = xp) :: m(npoints)        ! Masses of the particles
-   real(kind = xp) :: r(npoints,3)      ! Positions of the particles (3-dim vectors)
-   real(kind = xp) :: v(npoints,3)      ! Speeds of the particles (3-dim vectors)
-   real(kind = xp) :: a(npoints,3)      ! Acceleration of the particles (3-dim vectors)
-   real(kind = xp) :: t = 0._xp         ! Total time elapsed in the simulation
-   real(kind = xp) :: dt                ! Timestep
-   real(kind = xp) :: Ec                ! Total kinetic energy
-   real(kind = xp) :: Ep                ! Total potential energy
-   real(kind = xp) :: E                 ! Total energy
-   integer         :: iter      = 0     ! Number of iterations ran
-   integer         :: dump_freq = 10    ! Frequency at which the system is sampled
-   integer         :: maxtime = npoints/100 ! Maximum time (ad hoc)
+   real(kind = xp) :: m(npoints)            ! Masses of the particles
+   real(kind = xp) :: r(3,npoints)          ! Positions of the particles (3-dim vectors)
+   real(kind = xp) :: v(3,npoints)          ! Speeds of the particles (3-dim vectors)
+   real(kind = xp) :: a(3,npoints)          ! Acceleration of the particles (3-dim vectors)
+   real(kind = xp) :: t = 0._xp             ! Total time elapsed in the simulation
+   real(kind = xp) :: dt                    ! Timestep
+   real(kind = xp) :: Ec                    ! Total kinetic energy
+   real(kind = xp) :: Ep                    ! Total potential energy
+   real(kind = xp) :: E                     ! Total energy
+   integer         :: iter      = 0         ! Number of iterations ran
+   integer         :: dump_freq = 10        ! Frequency at which the system is sampled
+   integer         :: maxtime = npoints/1000 ! Maximum time (ad hoc)
 
    !---------------------------------------------
    ! Read initial positions
@@ -66,8 +66,8 @@ program n_body
 
       if (mod(iter, dump_freq) == 0) then
          print *, 'Dump', iter, t
-         ! call compute_energy(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
-         ! call compute_energy_omp(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
+         !call compute_energy(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
+         !call compute_energy_omp(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
          call compute_energy_omp_nn_1(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
          call write_dump(una, un, iter, Ec, Ep, E, t, r, v)
       end if

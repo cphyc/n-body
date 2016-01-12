@@ -19,7 +19,7 @@ contains
       integer :: i
 
       do i = 1, npoints
-         read (u, *) r(i, 1), r(i, 2), r(i, 3), m(i)
+         read (u, *) r(1, i), r(2, i), r(3, i), m(i)
       end do
 
    end subroutine read_mpos

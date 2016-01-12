@@ -5,10 +5,11 @@ implicit none
 
 private
 
-public :: initial_speeds, &
-     compute_force, compute_force_omp, compute_force_omp_nn_1, &
-     compute_initial_variables, integrate, &
-     compute_energy, compute_energy_omp, compute_energy_omp_nn_1
+public :: initial_speeds, compute_initial_variables, &
+          compute_force, compute_force_omp, compute_force_omp_nn_1, &
+          compute_energy, compute_energy_omp, compute_energy_omp_nn_1, &
+          integrate, integrate_omp
+
 contains
 
    subroutine initial_speeds (r, v)
@@ -20,9 +21,9 @@ contains
       real(kind = xp) :: omega
 
       omega = 0.5_xp / pi
-      v(:, 1) =   omega * r(:, 2)
-      v(:, 2) = - omega * r(:, 1)
-      v(:, 3) = 0._xp
+      v(1, :) =   omega * r(2, :)
+      v(2, :) = - omega * r(1, :)
+      v(3, :) = 0._xp
 
    end subroutine initial_speeds
 
@@ -51,11 +52,11 @@ contains
 
          do j = i+1, npoints
 
-            vec = r(i, :) - r(j, :)
+            vec = r(:, i) - r(:, j)
             tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
 
-            a(i, :) = a(i, :) - tmp*m(j)*vec
-            a(j, :) = a(j, :) + tmp*m(i)*vec
+            a(:, i) = a(:, i) - tmp*m(j)*vec
+            a(:, j) = a(:, j) + tmp*m(i)*vec
 
          end do
 
@@ -85,10 +86,10 @@ contains
         do j = 1, npoints
 
            if (i /= j) then
-              vec = r(i, :) - r(j, :)
+              vec = r(:, i) - r(:, j)
               tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
 
-              a(i, :) = a(i, :) - tmp*m(j)*vec
+              a(:, i) = a(:, i) - tmp*m(j)*vec
            end if
 
         end do
@@ -148,11 +149,11 @@ contains
 
       do i = 1, npoints
 
-         Ec = Ec + 0.5_xp * m(i) * norm2(v(i,:))**2
+         Ec = Ec + 0.5_xp * m(i) * norm2(v(:,i))**2
 
          do j = i+1, npoints
 
-            Ep = Ep - G * m(j) * m(i) / sqrt(norm2(r(i, :) - r(j, :))**2 + epsilon2)
+            Ep = Ep - G * m(j) * m(i) / sqrt(norm2(r(:, i) - r(:, j))**2 + epsilon2)
 
          end do
 
@@ -179,12 +180,12 @@ contains
       !$OMP DO SCHEDULE(GUIDED)
       do i = 1, npoints
 
-         Ec = Ec + 0.5_xp * m(i) * norm2(v(i,:))**2
+         Ec = Ec + 0.5_xp * m(i) * norm2(v(:,i))**2
 
          do j = 1, npoints
 
             if (i /= j) then
-               Ep = Ep - 0.5_xp * G * m(j) * m(i) / sqrt(norm2(r(i, :) - r(j, :))**2 + epsilon2)
+               Ep = Ep - 0.5_xp * G * m(j) * m(i) / sqrt(norm2(r(:, i) - r(:, j))**2 + epsilon2)
             end if
 
          end do
@@ -214,11 +215,11 @@ contains
      !$OMP DO SCHEDULE(GUIDED)
      do i = 1, npoints
 
-        Ec = Ec + 0.5_xp * m(i) * norm2(v(i,:))**2
+        Ec = Ec + 0.5_xp * m(i) * norm2(v(:,i))**2
 
         do j = i+1, npoints
 
-           Ep = Ep -  G * m(j) * m(i) / sqrt(norm2(r(i, :) - r(j, :))**2 + epsilon2)
+           Ep = Ep -  G * m(j) * m(i) / sqrt(norm2(r(:, i) - r(:, j))**2 + epsilon2)
 
         end do
 
