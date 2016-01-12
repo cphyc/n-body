@@ -5,8 +5,9 @@ implicit none
 
 private
 
-public :: initial_speeds, compute_force, compute_force_omp, &
-     compute_initial_variables, integrate, integrate_omp &
+public :: initial_speeds, &
+     compute_force, compute_force_omp, compute_force_omp_nn_1, &
+     compute_initial_variables, integrate, &
      compute_energy, compute_energy_omp, compute_energy_omp_nn_1
 contains
 
@@ -97,6 +98,40 @@ contains
      !$OMP END PARALLEL
 
    end subroutine compute_force_omp
+
+
+   subroutine compute_force_omp_nn_1 (m, r, a)
+      implicit none
+
+      real(kind=xp), intent(in)  :: m(:)
+      real(kind=xp), intent(in)  :: r(:,:)
+
+      real(kind=xp), intent(out) :: a(:,:)
+
+      real(kind=xp), dimension(3) :: vec, tmp
+      integer :: i, j
+
+      a = 0._xp
+
+      !$OMP PARALLEL PRIVATE(vec, j) REDUCTION(+:a)
+      !$OMP DO
+      do i = 1, npoints
+
+         do j = i+1, npoints
+
+            vec = r(i, :) - r(j, :)
+            tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
+
+            a(i, :) = a(i, :) - tmp*m(j)*vec
+            a(j, :) = a(j, :) + tmp*m(i)*vec
+
+         end do
+
+      end do
+      !$OMP END DO
+      !$OMP END PARALLEL
+
+   end subroutine compute_force_omp_nn_1
 
    subroutine compute_energy (m, r, v, Ec, Ep, E)
       implicit none
@@ -204,19 +239,5 @@ contains
       f = f + df * dt
 
    end subroutine integrate
-
-   subroutine integrate_omp(f, df, dt)
-      implicit none
-
-      real(xp), intent(in) :: dt
-      real(xp), intent(inout) :: f(:,:), df(:,:)
-
-      !$OMP PARALLEL
-      !$OMP WORKSHARE
-      f = f + df * dt
-      !$OMP END WORKSHARE
-      !$OMP END PARALLEL
-
-   end subroutine integrate_omp
 
 end module physics
