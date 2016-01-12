@@ -115,7 +115,6 @@ contains
 
    end subroutine compute_force_omp
 
-
    subroutine compute_force_omp_nn_1 (m, r, a)
       implicit none
 
@@ -129,17 +128,17 @@ contains
 
       a = 0._xp
 
-      !$OMP PARALLEL PRIVATE(vec, j) REDUCTION(+:a)
-      !$OMP DO
+      !$OMP PARALLEL PRIVATE(j, vec, tmp) REDUCTION(+:a)
+      !$OMP DO SCHEDULE(GUIDED)
       do i = 1, npoints
 
          do j = i+1, npoints
 
-            vec = r(i, :) - r(j, :)
+            vec = r(:, i) - r(:, j)
             tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
 
-            a(i, :) = a(i, :) - tmp*m(j)*vec
-            a(j, :) = a(j, :) + tmp*m(i)*vec
+            a(:, i) = a(:, i) - tmp*m(j)*vec
+            a(:, j) = a(:, i) + tmp*m(i)*vec
 
          end do
 
