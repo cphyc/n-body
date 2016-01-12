@@ -1,9 +1,12 @@
+# Configuration for gfortran
 GC=gfortran
-#GC=ifort
 CFLAGS=-Wall -Wextra -pedantic -std=f2008 -O3 -march=native -fopenmp
-#CFLAGS=-warn all -std08 -02 -xHost
 LFLAGS=-fopenmp
-#LFLAGS=-fopenmp
+
+# Configuration for ifort
+#GC=ifort
+#CFLAGS=-warn all -std08 -02 -xHost -openmp
+#LFLAGS=-openmp
 OUT=simul
 OUTG=gen
 
