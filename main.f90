@@ -16,7 +16,7 @@ program n_body
    real(kind = xp) :: E                     ! Total energy
    integer         :: iter      = 0         ! Number of iterations ran
    integer         :: dump_freq = 10        ! Frequency at which the system is sampled
-   integer         :: maxtime = npoints/1000 ! Maximum time (ad hoc)
+   integer         :: maxtime = npoints/100 ! Maximum time (ad hoc)
 
    !---------------------------------------------
    ! Read initial positions
