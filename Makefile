@@ -1,6 +1,9 @@
 GC=gfortran
-CFLAGS=-Wall -Wextra -pedantic -std=f2008 -march=native -O3 -fopenmp
+#GC=ifort
+CFLAGS=-Wall -Wextra -pedantic -std=f2008 -O3 -march=native -fopenmp
+#CFLAGS=-warn all -std08 -02 -xHost
 LFLAGS=-fopenmp
+#LFLAGS=-fopenmp
 OUT=simul
 OUTG=gen
 
