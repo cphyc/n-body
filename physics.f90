@@ -79,10 +79,12 @@ contains
 
         do j = 1, npoints
 
-           vec = r(i, :) - r(j, :)
-           tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
+           if (i /= j) then
+              vec = r(i, :) - r(j, :)
+              tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
 
-           a(i, :) = a(i, :) - tmp*m(j)*vec
+              a(i, :) = a(i, :) - tmp*m(j)*vec
+           end if
 
         end do
 
