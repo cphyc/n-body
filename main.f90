@@ -56,8 +56,8 @@ program n_body
       call integrate(v, a, dt/2)  ! Compute v(t+dt/2)
       call integrate(r, v, dt)    ! Compute r(t+dt)
       !call compute_force(m, r, a) ! Compute a(t+dt)
-      call compute_force_omp(m, r, a) ! Compute a(t+dt)
-      !call compute_force_omp_nn_1(m, r, a) ! Compute a(t+dt)
+      !call compute_force_omp(m, r, a) ! Compute a(t+dt)
+      call compute_force_omp_nn_1(m, r, a) ! Compute a(t+dt)
       call integrate(v, a, dt/2)  ! Compute v(t+dt)
 
       t = t + dt
@@ -66,8 +66,8 @@ program n_body
       if (mod(iter, dump_freq) == 0) then
          print *, 'Dump', iter, t
          !call compute_energy(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
-         call compute_energy_omp(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
-         !call compute_energy_omp_nn_1(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
+         !call compute_energy_omp(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
+         call compute_energy_omp_nn_1(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
          call write_dump(una, un, iter, Ec, Ep, E, t, r, v)
       end if
 
