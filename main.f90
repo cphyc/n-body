@@ -16,8 +16,14 @@ program n_body
    real(kind = xp) :: E         ! Total energy
    integer :: iter = 0          ! Number of iterations ran
    integer :: dump_freq = 10    ! Frequency at which the system is sampled
-   integer :: maxiter = 10000   ! Maximum number of iterations
+   integer :: maxiter = 3       ! Maximum number of iterations
 
+   real :: start_time, total_time
+
+   !---------------------------------------------
+   ! Start time
+   !---------------------------------------------
+   call cpu_time(start_time)
 
    !---------------------------------------------
    ! Read number of points
@@ -66,7 +72,7 @@ program n_body
 
       call integrate(v, a, dt/2)  ! Compute v(t+dt/2)
       call integrate(r, v, dt)    ! Compute r(t+dt)
-      call compute_force(m, r, a) ! Compute a(t+dt)
+      call compute_force_omp(m, r, a) ! Compute a(t+dt)
       call integrate(v, a, dt/2)  ! Compute v(t+dt)
 
       t = t + dt
@@ -89,5 +95,12 @@ program n_body
    deallocate(r)
    deallocate(v)
    deallocate(a)
+
+   !---------------------------------------------
+   ! Elapsed time
+   !---------------------------------------------
+   call cpu_time(total_time)
+   total_time = total_time - start_time
+   print*, 'Elapsed time:', total_time
 
 end program n_body
