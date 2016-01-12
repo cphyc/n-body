@@ -5,26 +5,6 @@ program n_body
 
    implicit none
 
-   real(kind = xp), dimension(:),    allocatable :: m ! Masses of the particles
-   real(kind = xp), dimension(:, :), allocatable :: r ! Positions of the particles (3-dim vectors)
-   real(kind = xp), dimension(:, :), allocatable :: v ! Speeds of the particles (3-dim vectors)
-   real(kind = xp), dimension(:, :), allocatable :: a ! Acceleration of the particles (3-dim vectors)
-   real(kind = xp) :: t = 0._xp ! Total time elapsed in the simulation
-   real(kind = xp) :: dt        ! Timestep
-   real(kind = xp) :: Ec        ! Total kinetic energy
-   real(kind = xp) :: Ep        ! Total potential energy
-   real(kind = xp) :: E         ! Total energy
-   integer :: iter = 0          ! Number of iterations ran
-   integer :: dump_freq = 10    ! Frequency at which the system is sampled
-   integer :: maxiter = 3       ! Maximum number of iterations
-
-   real :: start_time, total_time
-
-   !---------------------------------------------
-   ! Start time
-   !---------------------------------------------
-   call cpu_time(start_time)
-
    real(kind = xp) :: m(npoints)        ! Masses of the particles
    real(kind = xp) :: r(npoints,3)      ! Positions of the particles (3-dim vectors)
    real(kind = xp) :: v(npoints,3)      ! Speeds of the particles (3-dim vectors)
@@ -37,6 +17,13 @@ program n_body
    integer         :: iter      = 0     ! Number of iterations ran
    integer         :: dump_freq = 10    ! Frequency at which the system is sampled
    integer         :: maxiter   = 10000 ! Maximum number of iterations
+
+   real :: start_time, total_time
+
+   !---------------------------------------------
+   ! Start time
+   !---------------------------------------------
+   call cpu_time(start_time)
 
    !---------------------------------------------
    ! Read initial positions
