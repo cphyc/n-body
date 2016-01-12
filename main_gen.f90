@@ -4,7 +4,6 @@ program gen
 
    integer(kind=4)   :: ios     ! I/O test variable
    integer           :: i       ! Points iteration variable
-   character(len=50) :: line    ! String reading variable
 
    real(xp) :: x, y, z
    real(xp) :: radius
@@ -14,8 +13,6 @@ program gen
 
    open(unit=12, file="initial_conditions.dat", action="write", iostat=ios)
    if (ios /= 0) stop "OPENING initial_conditions.dat ERROR"
-
-   write(12, '(I8)') npoints
 
    do i = 1, npoints
 
