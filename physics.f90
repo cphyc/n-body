@@ -241,4 +241,18 @@ contains
 
    end subroutine integrate
 
+   subroutine integrate_omp(f, df, dt)
+      implicit none
+
+      real(xp), intent(in) :: dt
+      real(xp), intent(inout) :: f(:,:), df(:,:)
+
+      !$OMP PARALLEL
+      !$OMP WORKSHARE
+      f = f + df * dt
+      !$OMP END WORKSHARE
+      !$OMP END PARALLEL
+
+   end subroutine integrate_omp
+
 end module physics
