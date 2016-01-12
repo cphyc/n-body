@@ -44,8 +44,6 @@ contains
 
       a = 0._xp
 
-      !$OMP PARALLEL PRIVATE(j, vec, tmp)
-      !$OMP DO SCHEDULE(DYNAMIC, 100)
       do i = 1, npoints
 
          do j = i+1, npoints
@@ -53,19 +51,14 @@ contains
             vec = r(i, :) - r(j, :)
             tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
 
-            !$OMP CRITICAL
             a(i, :) = a(i, :) - tmp*m(j)*vec
             a(j, :) = a(j, :) + tmp*m(i)*vec
-            !$OMP END CRITICAL
 
          end do
 
       end do
-      !$OMP END DO
-      !$OMP END PARALLEL
 
    end subroutine compute_force
-
 
    subroutine compute_force_omp (m, r, a)
      implicit none
@@ -112,8 +105,6 @@ contains
       Ec = 0._xp
       Ep = 0._xp
 
-      !$OMP PARALLEL REDUCTION(+:Ep) REDUCTION(+:Ec) PRIVATE(j)
-      !$OMP DO SCHEDULE(DYNAMIC)
       do i = 1, npoints
 
          Ec = Ec + 0.5_xp * m(i) * norm2(v(i,:))**2
@@ -125,12 +116,45 @@ contains
          end do
 
       end do
+
+      E = Ec + Ep
+
+   end subroutine compute_energy
+
+   subroutine compute_energy_omp (m, r, v, Ec, Ep, E)
+      implicit none
+
+      real(kind=xp), intent(in) :: m(:)
+      real(kind=xp), intent(in) :: r(:,:), v(:,:)
+
+      real(kind=xp), intent(out) :: Ec, Ep, E
+
+      integer :: i, j
+
+      Ec = 0._xp
+      Ep = 0._xp
+
+      !$OMP PARALLEL REDUCTION(+:Ep) REDUCTION(+:Ec) PRIVATE(j)
+      !$OMP DO SCHEDULE(GUIDED)
+      do i = 1, npoints
+
+         Ec = Ec + 0.5_xp * m(i) * norm2(v(i,:))**2
+
+         do j = 1, npoints
+
+            if (i /= j) then
+               Ep = Ep - G * m(j) * m(i) / sqrt(norm2(r(i, :) - r(j, :))**2 + epsilon2)
+            end if
+
+         end do
+
+      end do
       !$OMP END DO
       !$OMP END PARALLEL
 
       E = Ec + Ep
 
-   end subroutine compute_energy
+   end subroutine compute_energy_omp
 
    subroutine integrate(f, df, dt)
       implicit none
