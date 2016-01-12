@@ -136,7 +136,7 @@ contains
       Ec = 0._xp
       Ep = 0._xp
 
-      !$OMP PARALLEL REDUCTION(+:Ec,+:Ep) PRIVATE(j)
+      !$OMP PARALLEL REDUCTION(+:Ec,Ep) PRIVATE(j)
       !$OMP DO SCHEDULE(GUIDED)
       do i = 1, npoints
 
