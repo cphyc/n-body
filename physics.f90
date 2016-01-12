@@ -109,6 +109,9 @@ contains
 
       integer :: i, j
 
+      Ec = 0._xp
+      Ep = 0._xp
+
       !$OMP PARALLEL REDUCTION(+:Ep) REDUCTION(+:Ec) PRIVATE(j)
       !$OMP DO SCHEDULE(DYNAMIC)
       do i = 1, npoints
