@@ -44,11 +44,11 @@ contains
 
       write (u, '(i16, 10(e16.8e2))') iter, t, Ep, Ec, E
 
-!      write (un_all, *) iter
-!      write (un_all, '(10(a16))') 'x', 'y', 'z', 'vx', 'vy', 'vz'
-!      do i = 1, npoints
-!         write (un_all, '(10(e16.8e2))') r(i, 1), r(i, 2), r(i, 3), v(i, 1), v(i, 2), v(i, 3)
-!      end do
+      write (ua, *) iter
+      write (ua, '(10(a16))') 'x', 'y', 'z', 'vx', 'vy', 'vz'
+      do i = 1, npoints
+         write (ua, '(10(e16.8e2))') r(1, i), r(2, i), r(3, i), v(1, i), v(2, i), v(3, i)
+      end do
 
   end subroutine write_dump
 
