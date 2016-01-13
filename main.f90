@@ -91,8 +91,9 @@ program n_body
       !--------------------------------
       print*, 'Reducing from rank', rank, istart, iend
       call mpi_allreduce(a, a_reduced, npoints, MPI_REAL, MPI_SUM, MPI_COMM_WORLD, err)
+      a = a_reduced
 
-      call integrate(v, a_reduced, dt/2)  ! Compute v(t+dt)
+      call integrate(v, a, dt/2)  ! Compute v(t+dt)
 
       t = t + dt
       iter = iter + 1
