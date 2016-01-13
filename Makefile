@@ -25,3 +25,6 @@ clean:
 
 watch:
 	bash autocompile.sh
+
+synchronize:
+	rsync -ahz --progress . mesopsl1.obspm.fr:"~/n-body" --include="*.f90" --exclude=".git/"
