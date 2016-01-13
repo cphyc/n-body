@@ -17,4 +17,4 @@ make clean
 make gen
 ./gen
 make
-/usr/bin/time -o simul.log ./simul
+/usr/bin/time -f "Total: %es User: %Us System: %Ss CPU: %P" -o simul.log ./simul
