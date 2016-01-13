@@ -100,9 +100,9 @@ program n_body
 
       if (mod(iter, dump_freq) == 0 .and. rank == MASTER) then
          print *, 'Dump', iter, t
-         !call compute_energy(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
+         call compute_energy(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
          !call compute_energy_omp(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
-         call compute_energy_omp_nn_1(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
+         !call compute_energy_omp_nn_1(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
          call write_dump(una, un, iter, Ec, Ep, E, t, r, v)
       end if
 
