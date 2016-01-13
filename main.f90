@@ -89,7 +89,6 @@ program n_body
       !--------------------------------
       ! reduce accelerations
       !--------------------------------
-      print*, 'Reducing from rank', rank, istart, iend
       call mpi_allreduce(a, a_reduced, npoints, MPI_REAL, MPI_SUM, MPI_COMM_WORLD, err)
       a = a_reduced
 
@@ -111,8 +110,10 @@ program n_body
    !---------------------------------------------
    ! Close files
    !---------------------------------------------
-   close(un)
-   close(una)
+   if (rank == MASTER) then
+      close(un)
+      close(una)
+   end if
 
    !---------------------------------------------
    ! Stop MPI
