@@ -79,13 +79,14 @@ contains
 
    end subroutine compute_force
 
-   subroutine compute_force_omp (m, r, a)
+   subroutine compute_force_omp (m, r, istart, iend, a)
      use omp_lib
 
      implicit none
 
      real(kind=xp), dimension(:),    intent(in)  :: m
      real(kind=xp), dimension(:, :), intent(in)  :: r
+     integer,                        intent(in)  :: istart, iend
 
      real(kind=xp), dimension(:, :), intent(out) :: a
 
@@ -96,7 +97,7 @@ contains
 
      !$OMP PARALLEL PRIVATE(j, vec, tmp)
      !$OMP DO SCHEDULE(GUIDED)
-     do i = 1, npoints
+     do i = istart, iend
 
         do j = 1, npoints
 
