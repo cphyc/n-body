@@ -3,12 +3,15 @@ program n_body
    use constants
    use physics
 
+   use mpi
+
    implicit none
 
    real(kind = xp) :: m(npoints)            ! Masses of the particles
    real(kind = xp) :: r(3,npoints)          ! Positions of the particles (3-dim vectors)
    real(kind = xp) :: v(3,npoints)          ! Speeds of the particles (3-dim vectors)
    real(kind = xp) :: a(3,npoints)          ! Acceleration of the particles (3-dim vectors)
+   real(kind = xp) :: a_reduced(3,npoints)
    real(kind = xp) :: t = 0._xp             ! Total time elapsed in the simulation
    real(kind = xp) :: dt                    ! Timestep
    real(kind = xp) :: Ec                    ! Total kinetic energy
@@ -16,7 +19,20 @@ program n_body
    real(kind = xp) :: E                     ! Total energy
    integer         :: iter      = 0         ! Number of iterations ran
    integer         :: dump_freq = 10        ! Frequency at which the system is sampled
-   integer         :: maxtime = npoints/100 ! Maximum time (ad hoc)
+   real            :: maxtime = real(npoints)/10000 ! Maximum time (ad hoc)
+   integer         :: maxiter
+
+   integer         :: err, n_procs, rank
+   integer         :: MASTER = 0
+
+   integer         :: istart, iend, domain_size
+
+   !---------------------------------------------
+   ! Initialize MPI
+   !---------------------------------------------
+   call mpi_init(err)
+   call mpi_comm_size(mpi_comm_world, n_procs, err)
+   call mpi_comm_rank(mpi_comm_world, rank, err)
 
    !---------------------------------------------
    ! Read initial positions
@@ -26,44 +42,62 @@ program n_body
    close(un)
 
    !---------------------------------------------
+   ! Compute number of domains
+   !---------------------------------------------
+   domain_size = ceiling(npoints * 1.0 / n_procs)
+
+   !---------------------------------------------
    ! Compute initial speeds and accelerations
    !---------------------------------------------
    call initial_speeds(r, v)
    call compute_force(m, r, a)
 
    !---------------------------------------------
-   ! Compute time step as a fraction of dynamic time
+   ! Set time step and output parameters
    !---------------------------------------------
    dt = 1.e-2_xp
-   print *, '# Simulation parameters'
-   print *, '# dt', dt
-   print *, '# npoints', npoints
-   print *, '# maxtime', maxtime
+   maxiter = nint(maxtime / dt)
+   if (rank == MASTER) then
+      print *, '# Simulation parameters'
+      print *, '# dt', dt
+      print *, '# npoints', npoints
+      print *, '# maxtime', maxtime
 
-   !---------------------------------------------
-   ! Open files for output, add headers
-   !---------------------------------------------
-   open(newunit=una, file='output.dat', status="replace")
-   open(newunit=un, file='output_int.dat', status="replace")
+      !---------------------------------------------
+      ! Open files for output, add headers
+      !---------------------------------------------
+      open(newunit=una, file='output.dat', status="replace")
+      open(newunit=un, file='output_int.dat', status="replace")
 
-   call write_dump_headers(un)
+      call write_dump_headers(un)
+   end if
 
    !---------------------------------------------
    ! Loop over time
    !---------------------------------------------
-   do while (t < maxtime)
+   do while (iter < maxiter)
 
       call integrate(v, a, dt/2)  ! Compute v(t+dt/2)
       call integrate(r, v, dt)    ! Compute r(t+dt)
       !call compute_force(m, r, a) ! Compute a(t+dt)
-      !call compute_force_omp(m, r, a) ! Compute a(t+dt)
-      call compute_force_omp_nn_1(m, r, a) ! Compute a(t+dt)
-      call integrate(v, a, dt/2)  ! Compute v(t+dt)
+
+      ! get the domain for integration from the number of nodes
+      istart = domain_size*rank + 1
+      iend   = istart + domain_size - 1
+      call compute_force_omp(m, r, istart, iend, a) ! Compute a(t+dt)
+
+      !--------------------------------
+      ! reduce accelerations
+      !--------------------------------
+      print*, 'Reducing from rank', rank, istart, iend
+      call mpi_allreduce(a, a_reduced, npoints, MPI_REAL, MPI_SUM, MPI_COMM_WORLD, err)
+
+      call integrate(v, a_reduced, dt/2)  ! Compute v(t+dt)
 
       t = t + dt
       iter = iter + 1
 
-      if (mod(iter, dump_freq) == 0) then
+      if (mod(iter, dump_freq) == 0 .and. rank == MASTER) then
          print *, 'Dump', iter, t
          !call compute_energy(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
          !call compute_energy_omp(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt
@@ -79,4 +113,8 @@ program n_body
    close(un)
    close(una)
 
+   !---------------------------------------------
+   ! Stop MPI
+   !---------------------------------------------
+   call mpi_finalize(err)
 end program n_body
