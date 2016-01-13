@@ -27,4 +27,4 @@ watch:
 	bash autocompile.sh
 
 sync:
-	rsync -ahz --progress . mesopsl1.obspm.fr:"~/n-body" --include="*.f90" --exclude=".git/"
+	rsync -ahz --progress . mesopsl1.obspm.fr:"~/n-body" --exclude=".git" --exclude="Makefile"
