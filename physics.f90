@@ -17,11 +17,8 @@ contains
       real(kind = xp), intent(in)  :: r(:,:)
       real(kind = xp), intent(out) :: v(:,:)
 
-      real(kind = xp) :: omega
-
-      omega = 0.5_xp / pi
-      v(1, :) =   omega * r(2, :)
-      v(2, :) = - omega * r(1, :)
+      v(1, :) =   r(2, :)
+      v(2, :) = - r(1, :)
       v(3, :) = 0._xp
 
    end subroutine initial_speeds
@@ -96,7 +93,7 @@ contains
      a = 0._xp
 
      !$OMP PARALLEL PRIVATE(j, vec, tmp)
-     !$OMP DO SCHEDULE(GUIDED)
+     !$OMP DO SCHEDULE(RUNTIME)
      do i = istart, iend
 
         do j = 1, npoints
@@ -125,13 +122,13 @@ contains
       real(kind=xp), intent(out) :: a(:,:)
 
       real(kind=xp), dimension(3) :: vec, tmp
-      integer :: i, j
+      integer :: i, j, k
 
       a = 0._xp
 
-      !$OMP PARALLEL PRIVATE(j, vec, tmp) REDUCTION(+:a)
-      !$OMP DO SCHEDULE(GUIDED)
-      do i = 1, npoints
+      !$OMP PARALLEL PRIVATE(j, k, vec, tmp) REDUCTION(+:a)
+      !$OMP DO SCHEDULE(RUNTIME)
+      do i = 1, npoints/2
 
          do j = 1, i-1
 
@@ -140,6 +137,18 @@ contains
 
             a(:, i) = a(:, i) - tmp*m(j)*vec
             a(:, j) = a(:, j) + tmp*m(i)*vec
+
+         end do
+
+         k = npoints + 1 - i
+
+         do j = 1, k-1
+
+            vec = r(:, k) - r(:, j)
+            tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
+
+            a(:, k) = a(:, k) - tmp*m(j)*vec
+            a(:, j) = a(:, j) + tmp*m(k)*vec
 
          end do
 
@@ -192,7 +201,7 @@ contains
       Ep = 0._xp
 
       !$OMP PARALLEL REDUCTION(+:Ec,Ep) PRIVATE(j)
-      !$OMP DO SCHEDULE(GUIDED)
+      !$OMP DO SCHEDULE(RUNTIME)
       do i = 1, npoints
 
          Ec = Ec + 0.5_xp * m(i) * norm2(v(:,i))**2
@@ -221,20 +230,29 @@ contains
 
      real(kind=xp), intent(out) :: Ec, Ep, E
 
-     integer :: i, j
+     integer :: i, j, k
 
      Ec = 0._xp
      Ep = 0._xp
 
-     !$OMP PARALLEL REDUCTION(+:Ec,Ep) PRIVATE(j)
-     !$OMP DO SCHEDULE(GUIDED)
-     do i = 1, npoints
+     !$OMP PARALLEL REDUCTION(+:Ec,Ep) PRIVATE(j,k)
+     !$OMP DO SCHEDULE(RUNTIME)
+     do i = 1, npoints/2
 
         Ec = Ec + 0.5_xp * m(i) * norm2(v(:,i))**2
 
         do j = 1, i-1
 
            Ep = Ep -  G * m(j) * m(i) / sqrt(norm2(r(:, i) - r(:, j))**2 + epsilon2)
+
+        end do
+
+        k = npoints + 1 - i
+        Ec = Ec + 0.5_xp * m(k) * norm2(v(:,k))**2
+
+        do j = 1, k-1
+
+           Ep = Ep -  G * m(j) * m(k) / sqrt(norm2(r(:, k) - r(:, j))**2 + epsilon2)
 
         end do
 
