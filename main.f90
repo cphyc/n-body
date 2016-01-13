@@ -70,7 +70,7 @@ program n_body
       open(newunit=una, file='output.dat', status="replace")
       open(newunit=un, file='output_int.dat', status="replace")
 
-      call write_dump_headers(un)
+      call write_dump_headers(un,una)
    end if
 
    !---------------------------------------------

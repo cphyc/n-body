@@ -24,11 +24,12 @@ contains
 
    end subroutine read_mpos
 
-   subroutine write_dump_headers (u)
+   subroutine write_dump_headers (u, ua)
       implicit none
-      integer, intent(in) :: u
+      integer, intent(in) :: u, ua
 
       write (u, '(10(a16))') 'iter', 't', 'Ep', 'Ec', 'E'
+      write (ua, '(10(a16))') 'x', 'y', 'z', 'vx', 'vy', 'vz'
 
    end subroutine write_dump_headers
 
@@ -45,7 +46,6 @@ contains
       write (u, '(i16, 10(e16.8e2))') iter, t, Ep, Ec, E
 
       write (ua, *) iter
-      write (ua, '(10(a16))') 'x', 'y', 'z', 'vx', 'vy', 'vz'
       do i = 1, npoints
          write (ua, '(10(e16.8e2))') r(1, i), r(2, i), r(3, i), v(1, i), v(2, i), v(3, i)
       end do
