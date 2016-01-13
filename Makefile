@@ -1,5 +1,5 @@
 # Configuration for gfortran
-GC=gfortran
+GC=mpifort
 CFLAGS=-Wall -Wextra -pedantic -std=f2008 -O3 -march=native -fopenmp
 LFLAGS=-fopenmp
 
