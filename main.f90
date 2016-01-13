@@ -83,7 +83,7 @@ program n_body
 
       ! get the domain for integration from the number of nodes
       istart = domain_size*rank + 1
-      iend   = istart + domain_size - 1
+      iend   = min(istart + domain_size - 1, npoints)
       call compute_force_omp(m, r, istart, iend, a) ! Compute a(t+dt)
 
       !--------------------------------
