@@ -1,10 +1,20 @@
 # Configuration for gfortran
+#GC=gfortran
+#CFLAGS=-Wall -Wextra -pedantic -std=f2008 -O2 -march=native -fopenmp
+#LFLAGS=-fopenmp
+
+# Configuration for mpifort
 GC=mpifort
 CFLAGS=-Wall -Wextra -pedantic -std=f2008 -O3 -march=native #-fopenmp
 LFLAGS= #-fopenmp
 
 # Configuration for ifort
 #GC=ifort
+#CFLAGS=-warn all -std08 -02 -xHost -openmp
+#LFLAGS=-openmp
+
+# Configuration for mpiifort
+#GC=mpif90
 #CFLAGS=-warn all -std08 -02 -xHost -openmp
 #LFLAGS=-openmp
 
@@ -28,3 +38,6 @@ watch:
 
 sync:
 	rsync -ahz --progress *{.f90,.sh,.slurm} mesopsl1.obspm.fr:"~/n-body"
+
+run:
+	/usr/bin/time -f "Total: %es User: %Us System: %Ss CPU: %P" ./$(OUT)
