@@ -12,17 +12,12 @@ program n_body
    real(kind = xp) :: v(3,npoints)               ! Speeds of the particles (3-dim vectors)
    real(kind = xp) :: a(3,npoints)               ! Acceleration of the particles (3-dim vectors)
    real(kind = xp) :: a_reduced(3,npoints)
-   real(kind = xp) :: t  = 0._xp                 ! Total time elapsed in the simulation
-   real(kind = xp) :: dt = 1.e-3_xp              ! Timestep
    real(kind = xp) :: Ec                         ! Total kinetic energy
    real(kind = xp) :: Ep                         ! Total potential energy
    real(kind = xp) :: E                          ! Total energy
-   real            :: maxtime = npoints/128._xp  ! Maximum time (ad hoc)
-   integer         :: maxiter                    ! Number of iteration
-   integer         :: iter      = 0              ! Number of iterations ran
-   integer         :: dump_freq = 10             ! Frequency at which the system is sampled
-   integer         :: flag_compute_force = 1     ! Choose force computation subroutine, 0=sequential, 1=omp, 2=omp_nn_1
-   integer         :: flag_compute_energy = 2    ! Choose energy computation subroutine, 0=sequential, 1=omp, 2=omp_nn_1
+
+   real(kind = xp) :: t  = 0._xp                 ! Total time elapsed in the simulation
+   integer         :: iter = 0                   ! Number of iterations ran
 
    integer         :: err = 0
    integer         :: rank = 0
@@ -46,6 +41,26 @@ program n_body
    close(un)
 
    !---------------------------------------------
+   ! Print parameters
+   !---------------------------------------------
+   if (rank == MASTER) then
+      print *, '# Simulation parameters'
+      print *, '# dt     :', dt
+      print *, '# npoints:', npoints
+      print *, '# maxtime:', maxtime
+      print *, '# maxiter:', maxiter
+      print *, '# nprocs :', nprocs
+
+      !---------------------------------------------
+      ! Open files for output, add headers
+      !---------------------------------------------
+      open(newunit=una, file='output.dat', status="replace")
+      open(newunit=un, file='output_int.dat', status="replace")
+
+      call write_dump_headers(un,una)
+   end if
+
+   !---------------------------------------------
    ! Compute number of domains
    !---------------------------------------------
    domain_size = ceiling(npoints * 1.0 / nprocs)
@@ -66,26 +81,6 @@ program n_body
       case default
          stop "Unknown value of flag_compute_force"
    end select
-
-   !---------------------------------------------
-   ! Print parameters
-   !---------------------------------------------
-   maxiter = nint(maxtime/dt)
-   if (rank == MASTER) then
-      print *, '# Simulation parameters'
-      print *, '# dt     :', dt
-      print *, '# npoints:', npoints
-      print *, '# maxtime:', maxtime
-      print *, '# nprocs :', nprocs
-
-      !---------------------------------------------
-      ! Open files for output, add headers
-      !---------------------------------------------
-      open(newunit=una, file='output.dat', status="replace")
-      open(newunit=un, file='output_int.dat', status="replace")
-
-      call write_dump_headers(un,una)
-   end if
 
    !---------------------------------------------
    ! Loop over time
