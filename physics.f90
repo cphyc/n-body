@@ -47,12 +47,11 @@ contains
 
    end subroutine integrate_omp
 
-   subroutine compute_force (m, r, istart, iend, a)
+   subroutine compute_force (m, r1, r2, a, N)
       implicit none
 
       real(kind=xp), intent(in) :: m(:)
-      real(kind=xp), intent(in) :: r(:,:)
-      integer,       intent(in) :: istart, iend
+      real(kind=xp), intent(in) :: r1(:,:), r2(:,:)
 
       real(kind=xp), intent(out) :: a(:,:)
 
@@ -65,7 +64,7 @@ contains
 
          do j = i+1, npoints
 
-            vec = r(:, i) - r(:, j)
+            vec = r1(:, i) - r2(:, j)
             tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
 
             a(:, i) = a(:, i) - tmp*m(j)*vec
@@ -77,12 +76,11 @@ contains
 
    end subroutine compute_force
 
-   subroutine compute_force_omp (m, r, istart, iend, a)
+   subroutine compute_force_omp (m, r1, r2, a)
       implicit none
 
       real(kind=xp), intent(in) :: m(:)
-      real(kind=xp), intent(in) :: r(:, :)
-      integer,       intent(in) :: istart, iend
+      real(kind=xp), intent(in) :: r1(:, :), r2(:, :)
 
       real(kind=xp), intent(out) :: a(:, :)
 
@@ -93,12 +91,12 @@ contains
 
       !$OMP PARALLEL PRIVATE(j, vec, tmp)
       !$OMP DO SCHEDULE(RUNTIME)
-      do i = istart, iend
+      do i = 1, N
 
-         do j = 1, npoints
+         do j = 1, N
 
             if (i /= j) then
-               vec = r(:, i) - r(:, j)
+               vec = r1(:, i) - r2(:, j)
                tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
 
                a(:, i) = a(:, i) - tmp*m(j)*vec
@@ -112,12 +110,11 @@ contains
 
    end subroutine compute_force_omp
 
-   subroutine compute_force_omp_nn_1 (m, r, istart, iend, a)
+   subroutine compute_force_diag (m, r1, r2, a)
       implicit none
 
       real(kind=xp), intent(in) :: m(:)
-      real(kind=xp), intent(in) :: r(:,:)
-      integer,       intent(in) :: istart, iend
+      real(kind=xp), intent(in) :: r1(:,:), r(:,:)
 
       real(kind=xp), intent(out) :: a(:,:)
 
@@ -132,7 +129,7 @@ contains
 
          do j = 1, i-1
 
-            vec = r(:, i) - r(:, j)
+            vec = r1(:, i) - r2(:, j)
             tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
 
             a(:, i) = a(:, i) - tmp*m(j)*vec
@@ -144,7 +141,7 @@ contains
 
          do j = 1, k-1
 
-            vec = r(:, k) - r(:, j)
+            vec = r1(:, k) - r2(:, j)
             tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
 
             a(:, k) = a(:, k) - tmp*m(j)*vec
@@ -156,7 +153,7 @@ contains
       !$OMP END DO
       !$OMP END PARALLEL
 
-   end subroutine compute_force_omp_nn_1
+   end subroutine compute_force_diag
 
    subroutine compute_energy (m, r, v, Ec, Ep, E)
       implicit none

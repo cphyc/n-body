@@ -4,16 +4,16 @@
 #LFLAGS=-fopenmp
 
 # Configuration for mpifort
-#GC=mpifort
-#CFLAGS=-Wall -Wextra -pedantic -std=f2008 -O3 -march=native -fopenmp
-#LFLAGS=-fopenmp
-#MPIRUN=mpirun
+GC=mpifort
+CFLAGS=-Wall -Wextra -pedantic -std=f2008 -O3 -march=native -fopenmp
+LFLAGS=-fopenmp
+MPIRUN=mpirun
 
 # Configuration for mpif90
-GC=mpif90
-CFLAGS=-warn all -std08 -02 -xHost -openmp
-LFLAGS=-openmp
-MPIRUN=mpirun
+# GC=mpif90
+# CFLAGS=-warn all -std08 -02 -xHost -openmp
+# LFLAGS=-openmp
+# MPIRUN=mpirun
 
 # Configuration for ifort
 #GC=ifort

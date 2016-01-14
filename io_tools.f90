@@ -34,22 +34,22 @@ contains
    end subroutine write_dump_headers
 
    subroutine write_dump (ua, u, iter, Ec, Ep, E, t, r, v)
-      implicit none
+     implicit none
 
-      real(kind=xp), intent(in) :: Ec, Ep, E, t
-      real(kind=xp), intent(in) :: r(:,:)
-      real(kind=xp), intent(in) :: v(:,:)
-      integer,       intent(in) :: ua, u, iter
+     real(kind=xp), intent(in) :: Ec, Ep, E, t
+     real(kind=xp), intent(in) :: r(:,:)
+     real(kind=xp), intent(in) :: v(:,:)
+     integer,       intent(in) :: ua, u, iter
 
-      integer :: i
+     integer :: i
 
-      write (u, '(i16, 10(e16.8e2))') iter, t, Ep, Ec, E
+     write (u, '(i16, 10(e16.8e2))') iter, t, Ep, Ec, E
 
-      !write (ua, *) iter
-      !do i = 1, npoints
-      !   write (ua, '(10(e16.8e2))') r(1, i), r(2, i), r(3, i), v(1, i), v(2, i), v(3, i)
-      !end do
+     !write (ua, *) iter
+     !do i = 1, npoints
+     !   write (ua, '(10(e16.8e2))') r(1, i), r(2, i), r(3, i), v(1, i), v(2, i), v(3, i)
+     !end do
 
-  end subroutine write_dump
+   end subroutine write_dump
 
 end module io_tools
