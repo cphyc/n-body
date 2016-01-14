@@ -63,7 +63,7 @@ program n_body
    !---------------------------------------------
    ! Compute number of domains
    !---------------------------------------------
-   domain_size = ceiling(npoints * 1.0 / nprocs)
+   domain_size = ceiling(npoints * 0.5 / nprocs)
 
    !---------------------------------------------
    ! Compute initial speeds and accelerations
@@ -77,7 +77,7 @@ program n_body
       case(1)
          call compute_force_omp(m, r, istart, iend, a)
       case(2)
-         call compute_force_omp_nn_1(m, r, istart, iend, a)
+         call compute_force_omp_nn_1(m, r, istart, iend/2, a)
       case default
          stop "Unknown value of flag_compute_force"
    end select
@@ -94,12 +94,12 @@ program n_body
       ! Get the domain for integration from the number of nodes
       !--------------------------------
       istart = domain_size*rank + 1
-      iend   = min(istart + domain_size - 1, npoints)
+      iend   = min(istart + domain_size - 1, npoints/2)
       select case (flag_compute_force)
          case(0)
-            call compute_force(m, r, istart, iend, a)          ! Compute a(t+dt) with sequential version
+            call compute_force(m, r, istart*2-1, iend*2, a)          ! Compute a(t+dt) with sequential version
          case(1)
-            call compute_force_omp(m, r, istart, iend, a)      ! Compute a(t+dt) with naive OpenMP version
+            call compute_force_omp(m, r, istart*2-1, iend*2, a)      ! Compute a(t+dt) with naive OpenMP version
          case(2)
             call compute_force_omp_nn_1(m, r, istart, iend, a) ! Compute a(t+dt) with fast OpenMP version
          case default

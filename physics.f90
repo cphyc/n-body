@@ -117,7 +117,7 @@ contains
 
       real(kind=xp), intent(in) :: m(:)
       real(kind=xp), intent(in) :: r(:,:)
-      integer,       intent(in) :: istart, iend ! FIXME: Not used right now, only for consistency, don’t use with MPI
+      integer,       intent(in) :: istart, iend
 
       real(kind=xp), intent(out) :: a(:,:)
 
@@ -128,7 +128,7 @@ contains
 
       !$OMP PARALLEL PRIVATE(j, k, vec, tmp) REDUCTION(+:a)
       !$OMP DO SCHEDULE(RUNTIME)
-      do i = 1, npoints/2
+      do i = istart, iend
 
          do j = 1, i-1
 
