@@ -1,7 +1,7 @@
 # Configuration for gfortran
 GC=mpifort
-CFLAGS=-Wall -Wextra -pedantic -std=f2008 -O3 -march=native -fopenmp
-LFLAGS=-fopenmp
+CFLAGS=-Wall -Wextra -pedantic -std=f2008 -O3 -march=native #-fopenmp
+LFLAGS= #-fopenmp
 
 # Configuration for ifort
 #GC=ifort
@@ -27,4 +27,4 @@ watch:
 	bash autocompile.sh
 
 sync:
-	rsync -ahz --progress . mesopsl1.obspm.fr:"~/n-body" --exclude=".git" --exclude="Makefile"
+	rsync -ahz --progress *{.f90,.sh,.slurm} mesopsl1.obspm.fr:"~/n-body"
