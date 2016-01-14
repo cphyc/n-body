@@ -6,7 +6,7 @@ implicit none
 private
 
 public :: initial_speeds, integrate, integrate_omp, &
-          compute_force, compute_force_omp, compute_force_omp_nn_1, &
+          compute_force, compute_force_omp, compute_force_omp_diag, &
           compute_energy, compute_energy_omp, compute_energy_omp_nn_1
 
 contains
@@ -47,11 +47,12 @@ contains
 
    end subroutine integrate_omp
 
-   subroutine compute_force (m, r1, r2, a, N)
+   subroutine compute_force (m, r1, r2, length, a)
       implicit none
 
       real(kind=xp), intent(in) :: m(:)
       real(kind=xp), intent(in) :: r1(:,:), r2(:,:)
+      integer                   :: length
 
       real(kind=xp), intent(out) :: a(:,:)
 
@@ -60,9 +61,9 @@ contains
 
       a = 0._xp
 
-      do i = istart, iend
+      do i = 1, length
 
-         do j = i+1, npoints
+         do j = i+1, length
 
             vec = r1(:, i) - r2(:, j)
             tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
@@ -76,11 +77,12 @@ contains
 
    end subroutine compute_force
 
-   subroutine compute_force_omp (m, r1, r2, a)
+   subroutine compute_force_omp (m, r1, r2, length, a)
       implicit none
 
       real(kind=xp), intent(in) :: m(:)
       real(kind=xp), intent(in) :: r1(:, :), r2(:, :)
+      integer                   :: length
 
       real(kind=xp), intent(out) :: a(:, :)
 
@@ -91,9 +93,9 @@ contains
 
       !$OMP PARALLEL PRIVATE(j, vec, tmp)
       !$OMP DO SCHEDULE(RUNTIME)
-      do i = 1, N
+      do i = 1, length
 
-         do j = 1, N
+         do j = 1, length
 
             if (i /= j) then
                vec = r1(:, i) - r2(:, j)
@@ -110,11 +112,12 @@ contains
 
    end subroutine compute_force_omp
 
-   subroutine compute_force_diag (m, r1, r2, a)
+   subroutine compute_force_omp_diag (m, r1, r2, length, a)
       implicit none
 
       real(kind=xp), intent(in) :: m(:)
-      real(kind=xp), intent(in) :: r1(:,:), r(:,:)
+      real(kind=xp), intent(in) :: r1(:,:), r2(:,:)
+      integer                   :: length
 
       real(kind=xp), intent(out) :: a(:,:)
 
@@ -125,7 +128,7 @@ contains
 
       !$OMP PARALLEL PRIVATE(j, k, vec, tmp) REDUCTION(+:a)
       !$OMP DO SCHEDULE(RUNTIME)
-      do i = istart, iend
+      do i = 1, length/2
 
          do j = 1, i-1
 
@@ -137,7 +140,7 @@ contains
 
          end do
 
-         k = npoints + 1 - i
+         k = length + 1 - i
 
          do j = 1, k-1
 
@@ -153,7 +156,7 @@ contains
       !$OMP END DO
       !$OMP END PARALLEL
 
-   end subroutine compute_force_diag
+   end subroutine compute_force_omp_diag
 
    subroutine compute_energy (m, r, v, Ec, Ep, E)
       implicit none

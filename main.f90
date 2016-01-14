@@ -11,8 +11,8 @@ program n_body
    real(kind = xp) :: r(3,npoints)               ! Positions of the particles (3-dim vectors)
    real(kind = xp) :: v(3,npoints)               ! Speeds of the particles (3-dim vectors)
    real(kind = xp) :: a(3,npoints)               ! Acceleration of the particles (3-dim vectors)
-   real(kind = xp) :: a_comm(:, :), a_right(:, :)
-   real(kind = xp) :: r_other(:, :), r_right(:, :)
+   real(kind = xp), allocatable :: a_comm(:, :), a_right(:, :)
+   real(kind = xp), allocatable :: r_other(:, :), r_right(:, :)
    real(kind = xp) :: a_reduced(3,npoints)
    real(kind = xp) :: Ec                         ! Total kinetic energy
    real(kind = xp) :: Ep                         ! Total potential energy
