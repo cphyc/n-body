@@ -22,7 +22,7 @@ program n_body
    real            :: maxtime = real(npoints)/10000 ! Maximum time (ad hoc)
    integer         :: maxiter
 
-   integer         :: err, n_procs, rank
+   integer         :: err, nprocs, rank = 0
    integer         :: MASTER = 0
 
    integer         :: istart, iend, domain_size
@@ -31,7 +31,7 @@ program n_body
    ! Initialize MPI
    !---------------------------------------------
    call mpi_init(err)
-   call mpi_comm_size(mpi_comm_world, n_procs, err)
+   call mpi_comm_size(mpi_comm_world, nprocs, err)
    call mpi_comm_rank(mpi_comm_world, rank, err)
 
    !---------------------------------------------
@@ -44,7 +44,7 @@ program n_body
    !---------------------------------------------
    ! Compute number of domains
    !---------------------------------------------
-   domain_size = ceiling(npoints * 1.0 / n_procs)
+   domain_size = ceiling(npoints * 1.0 / nprocs)
 
    !---------------------------------------------
    ! Compute initial speeds and accelerations
@@ -62,6 +62,7 @@ program n_body
       print *, '# dt', dt
       print *, '# npoints', npoints
       print *, '# maxtime', maxtime
+      print *, '# nprocs', nprocs
 
       !---------------------------------------------
       ! Open files for output, add headers
