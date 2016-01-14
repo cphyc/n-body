@@ -7,22 +7,22 @@ program n_body
 
    implicit none
 
-   real(kind = xp) :: m(npoints)                ! Masses of the particles
-   real(kind = xp) :: r(3,npoints)              ! Positions of the particles (3-dim vectors)
-   real(kind = xp) :: v(3,npoints)              ! Speeds of the particles (3-dim vectors)
-   real(kind = xp) :: a(3,npoints)              ! Acceleration of the particles (3-dim vectors)
+   real(kind = xp) :: m(npoints)                 ! Masses of the particles
+   real(kind = xp) :: r(3,npoints)               ! Positions of the particles (3-dim vectors)
+   real(kind = xp) :: v(3,npoints)               ! Speeds of the particles (3-dim vectors)
+   real(kind = xp) :: a(3,npoints)               ! Acceleration of the particles (3-dim vectors)
    real(kind = xp) :: a_reduced(3,npoints)
-   real(kind = xp) :: t = 0._xp                 ! Total time elapsed in the simulation
-   real(kind = xp) :: dt                        ! Timestep
-   real(kind = xp) :: Ec                        ! Total kinetic energy
-   real(kind = xp) :: Ep                        ! Total potential energy
-   real(kind = xp) :: E                         ! Total energy
-   integer         :: iter      = 0             ! Number of iterations ran
-   integer         :: dump_freq = 10            ! Frequency at which the system is sampled
-   real            :: maxtime = npoints/128._xp ! Maximum time (ad hoc)
-   integer         :: maxiter
-   integer         :: flag_compute_force = 1    ! Choose force computation subroutine, 0=sequential, 1=omp, 2=omp_nn_1
-   integer         :: flag_compute_energy = 2   ! Choose energy computation subroutine, 0=sequential, 1=omp, 2=omp_nn_1
+   real(kind = xp) :: t  = 0._xp                 ! Total time elapsed in the simulation
+   real(kind = xp) :: dt = 1.e-3_xp              ! Timestep
+   real(kind = xp) :: Ec                         ! Total kinetic energy
+   real(kind = xp) :: Ep                         ! Total potential energy
+   real(kind = xp) :: E                          ! Total energy
+   real            :: maxtime = npoints/128._xp  ! Maximum time (ad hoc)
+   integer         :: maxiter                    ! Number of iteration
+   integer         :: iter      = 0              ! Number of iterations ran
+   integer         :: dump_freq = 10             ! Frequency at which the system is sampled
+   integer         :: flag_compute_force = 1     ! Choose force computation subroutine, 0=sequential, 1=omp, 2=omp_nn_1
+   integer         :: flag_compute_energy = 2    ! Choose energy computation subroutine, 0=sequential, 1=omp, 2=omp_nn_1
 
    integer         :: err = 0
    integer         :: rank = 0
@@ -68,16 +68,15 @@ program n_body
    end select
 
    !---------------------------------------------
-   ! Set time step and output parameters
+   ! Print parameters
    !---------------------------------------------
-   dt = 1.e-2_xp
-   maxiter = nint(maxtime / dt)
+   maxiter = nint(maxtime/dt)
    if (rank == MASTER) then
       print *, '# Simulation parameters'
-      print *, '# dt', dt
-      print *, '# npoints', npoints
-      print *, '# maxtime', maxtime
-      print *, '# nprocs', nprocs
+      print *, '# dt     :', dt
+      print *, '# npoints:', npoints
+      print *, '# maxtime:', maxtime
+      print *, '# nprocs :', nprocs
 
       !---------------------------------------------
       ! Open files for output, add headers
@@ -115,7 +114,7 @@ program n_body
       !--------------------------------
       ! reduce accelerations
       !--------------------------------
-      call mpi_allreduce(a, a_reduced, npoints, MPI_REAL, MPI_SUM, MPI_COMM_WORLD, err)
+      call mpi_allreduce(a, a_reduced, npoints*3, MPI_REAL_XP, MPI_SUM, MPI_COMM_WORLD, err)
       a = a_reduced
 
       call integrate(v, a, dt/2)  ! Compute v(t+dt)
