@@ -4,9 +4,16 @@
 #LFLAGS=-fopenmp
 
 # Configuration for mpifort
-GC=mpifort
-CFLAGS=-Wall -Wextra -pedantic -std=f2008 -O3 -march=native #-fopenmp
-LFLAGS= #-fopenmp
+#GC=mpifort
+#CFLAGS=-Wall -Wextra -pedantic -std=f2008 -O3 -march=native -fopenmp
+#LFLAGS=-fopenmp
+#MPIRUN=mpirun
+
+# Configuration for mpif90
+GC=mpif90
+CFLAGS=-warn all -std08 -02 -xHost -openmp
+LFLAGS=-openmp
+MPIRUN=mpirun
 
 # Configuration for ifort
 #GC=ifort
@@ -14,9 +21,10 @@ LFLAGS= #-fopenmp
 #LFLAGS=-openmp
 
 # Configuration for mpiifort
-#GC=mpif90
+#GC=mpiifort
 #CFLAGS=-warn all -std08 -02 -xHost -openmp
 #LFLAGS=-openmp
+#MPIRUN=mpiexec.hydra
 
 OUT=simul
 OUTG=gen
@@ -41,3 +49,6 @@ sync:
 
 run:
 	/usr/bin/time -f "Total: %es User: %Us System: %Ss CPU: %P" ./$(OUT)
+
+runmpi:
+	/usr/bin/time -f "Total: %es User: %Us System: %Ss CPU: %P" $(MPIRUN) -n $(MPI_PROC) ./$(OUT)
