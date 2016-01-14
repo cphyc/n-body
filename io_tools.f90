@@ -45,10 +45,10 @@ contains
 
       write (u, '(i16, 10(e16.8e2))') iter, t, Ep, Ec, E
 
-      write (ua, *) iter
-      do i = 1, npoints
-         write (ua, '(10(e16.8e2))') r(1, i), r(2, i), r(3, i), v(1, i), v(2, i), v(3, i)
-      end do
+      !write (ua, *) iter
+      !do i = 1, npoints
+      !   write (ua, '(10(e16.8e2))') r(1, i), r(2, i), r(3, i), v(1, i), v(2, i), v(3, i)
+      !end do
 
   end subroutine write_dump
 
