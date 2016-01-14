@@ -47,11 +47,12 @@ contains
 
    end subroutine integrate_omp
 
-   subroutine compute_force (m, r, a)
+   subroutine compute_force (m, r, istart, iend, a)
       implicit none
 
-      real(kind=xp), intent(in)  :: m(:)
-      real(kind=xp), intent(in)  :: r(:,:)
+      real(kind=xp), intent(in) :: m(:)
+      real(kind=xp), intent(in) :: r(:,:)
+      integer,       intent(in) :: istart, iend
 
       real(kind=xp), intent(out) :: a(:,:)
 
@@ -60,7 +61,7 @@ contains
 
       a = 0._xp
 
-      do i = 1, npoints
+      do i = istart, iend
 
          do j = i+1, npoints
 
@@ -77,47 +78,46 @@ contains
    end subroutine compute_force
 
    subroutine compute_force_omp (m, r, istart, iend, a)
-     use omp_lib
+      implicit none
 
-     implicit none
+      real(kind=xp), intent(in) :: m(:)
+      real(kind=xp), intent(in) :: r(:, :)
+      integer,       intent(in) :: istart, iend
 
-     real(kind=xp), dimension(:),    intent(in)  :: m
-     real(kind=xp), dimension(:, :), intent(in)  :: r
-     integer,                        intent(in)  :: istart, iend
+      real(kind=xp), intent(out) :: a(:, :)
 
-     real(kind=xp), dimension(:, :), intent(out) :: a
+      real(kind=xp), dimension(3) :: vec, tmp
+      integer :: i, j
 
-     real(kind=xp), dimension(3) :: vec, tmp
-     integer :: i, j
+      a = 0._xp
 
-     a = 0._xp
+      !$OMP PARALLEL PRIVATE(j, vec, tmp)
+      !$OMP DO SCHEDULE(RUNTIME)
+      do i = istart, iend
 
-     !$OMP PARALLEL PRIVATE(j, vec, tmp)
-     !$OMP DO SCHEDULE(RUNTIME)
-     do i = istart, iend
+         do j = 1, npoints
 
-        do j = 1, npoints
+            if (i /= j) then
+               vec = r(:, i) - r(:, j)
+               tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
 
-           if (i /= j) then
-              vec = r(:, i) - r(:, j)
-              tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
+               a(:, i) = a(:, i) - tmp*m(j)*vec
+            end if
 
-              a(:, i) = a(:, i) - tmp*m(j)*vec
-           end if
+         end do
 
-        end do
-
-     end do
-     !$OMP END DO
-     !$OMP END PARALLEL
+      end do
+      !$OMP END DO
+      !$OMP END PARALLEL
 
    end subroutine compute_force_omp
 
-   subroutine compute_force_omp_nn_1 (m, r, a)
+   subroutine compute_force_omp_nn_1 (m, r, istart, iend, a)
       implicit none
 
-      real(kind=xp), intent(in)  :: m(:)
-      real(kind=xp), intent(in)  :: r(:,:)
+      real(kind=xp), intent(in) :: m(:)
+      real(kind=xp), intent(in) :: r(:,:)
+      integer,       intent(in) :: istart, iend ! FIXME: Not used right now, only for consistency, don’t use with MPI
 
       real(kind=xp), intent(out) :: a(:,:)
 
