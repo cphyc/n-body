@@ -153,9 +153,9 @@ contains
             istart = N*rank + 1
             iend   = min(istart + N - 1, npoints/2)
             if (flag_diag) then
-               call compute_force_diag(m, r, istart, iend, npoints, a)                ! Compute a(t+dt) with fast OpenMP version
+               call compute_force_diag(m, r, istart, iend, npoints, a)                ! Compute a(t+dt) with fast version
             else
-               call compute_force(m, r, istart*2-1, iend*2, r, 1, npoints, a)         ! Compute a(t+dt) with sequential version
+               call compute_force(m, r, istart*2-1, iend*2, r, 1, npoints, a)         ! Compute a(t+dt) with slow version
             end if
             !--------------------------------
             ! reduce accelerations
@@ -370,34 +370,41 @@ contains
       real(xp), allocatable :: r_gathered(:, :), v_gathered(:, :)
       integer :: err
 
-      if (rank == MASTER) then
-         allocate(r_gathered(3, npoints))
-         allocate(v_gathered(3, npoints))
-      end if
 
       select case(flag_mpi)
       case(0)
          if (rank == MASTER) then
-            r_gathered = r
-            v_gathered = v
+            if (flag_diag) then
+               call compute_energy_diag(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt with fast version
+            else
+               call compute_energy(m, r, v, Ec, Ep, E)      ! Compute Ec, Ep, E at t+dt with slow version
+            end if
          end if
-      case(1) ! gather r and v on master node
+      case(1)
+         ! gather r and v on master node
+         if (rank == MASTER) then
+            allocate(r_gathered(3, npoints))
+            allocate(v_gathered(3, npoints))
+         end if
+
          call mpi_gather(r, 3*N, MPI_REAL_XP, r_gathered, 3*npoints, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)
          call mpi_gather(v, 3*N, MPI_REAL_XP, v_gathered, 3*npoints, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)
-      end select
 
-      if (rank == MASTER) then
+         if (rank == MASTER) then
 
-         if (flag_diag) then
-            call compute_energy_diag(m, r_gathered, v_gathered, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt with fast OpenMP version
-         else
-            call compute_energy(m, r_gathered, v_gathered, Ec, Ep, E)      ! Compute Ec, Ep, E at t+dt with sequential version
+            if (flag_diag) then
+               call compute_energy_diag(m, r_gathered, v_gathered, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt with fast version
+            else
+               call compute_energy(m, r_gathered, v_gathered, Ec, Ep, E)      ! Compute Ec, Ep, E at t+dt with slow version
+            end if
+
+            deallocate(r_gathered)
+            deallocate(v_gathered)
+
          end if
-
-         deallocate(r_gathered)
-         deallocate(v_gathered)
-      end if
-
+      case default
+         stop "Unknown value of flag_mpi"
+      end select
 
    end subroutine compute_energy_wrap
 
