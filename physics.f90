@@ -7,9 +7,7 @@ implicit none
 
 private
 
-public :: initial_speeds, integrate, &
-          compute_force_wrap, &
-          compute_energy, compute_energy_diag
+public :: initial_speeds, integrate, compute_force_wrap, compute_energy_wrap
 
 contains
 
@@ -319,45 +317,61 @@ contains
    end subroutine compute_energy
 
    subroutine compute_energy_diag (m, r, v, Ec, Ep, E)
-     implicit none
+      implicit none
 
-     real(kind=xp), intent(in) :: m(:)
-     real(kind=xp), intent(in) :: r(:,:), v(:,:)
+      real(kind=xp), intent(in) :: m(:)
+      real(kind=xp), intent(in) :: r(:,:), v(:,:)
 
-     real(kind=xp), intent(out) :: Ec, Ep, E
+      real(kind=xp), intent(out) :: Ec, Ep, E
 
-     integer :: i, j, k
+      integer :: i, j, k
 
-     Ec = 0._xp
-     Ep = 0._xp
+      Ec = 0._xp
+      Ep = 0._xp
 
-     !$OMP PARALLEL REDUCTION(+:Ec,Ep) PRIVATE(j,k)
-     !$OMP DO SCHEDULE(RUNTIME)
-     do i = 1, npoints/2
+      !$OMP PARALLEL REDUCTION(+:Ec,Ep) PRIVATE(j,k)
+      !$OMP DO SCHEDULE(RUNTIME)
+      do i = 1, npoints/2
 
-        Ec = Ec + 0.5_xp * m(i) * norm2(v(:,i))**2
+         Ec = Ec + 0.5_xp * m(i) * norm2(v(:,i))**2
 
-        do j = 1, i-1
+         do j = 1, i-1
 
-           Ep = Ep -  G * m(j) * m(i) / sqrt(norm2(r(:, i) - r(:, j))**2 + epsilon2)
+            Ep = Ep -  G * m(j) * m(i) / sqrt(norm2(r(:, i) - r(:, j))**2 + epsilon2)
 
-        end do
+         end do
 
-        k = npoints + 1 - i
-        Ec = Ec + 0.5_xp * m(k) * norm2(v(:,k))**2
+         k = npoints + 1 - i
+         Ec = Ec + 0.5_xp * m(k) * norm2(v(:,k))**2
 
-        do j = 1, k-1
+         do j = 1, k-1
 
-           Ep = Ep -  G * m(j) * m(k) / sqrt(norm2(r(:, k) - r(:, j))**2 + epsilon2)
+            Ep = Ep -  G * m(j) * m(k) / sqrt(norm2(r(:, k) - r(:, j))**2 + epsilon2)
 
-        end do
+         end do
 
-     end do
-     !$OMP END DO
-     !$OMP END PARALLEL
+      end do
+      !$OMP END DO
+      !$OMP END PARALLEL
 
-     E = Ec + Ep
+      E = Ec + Ep
 
    end subroutine compute_energy_diag
+
+   subroutine compute_energy_wrap(m, r, v, Ec, Ep, E)
+      implicit none
+
+      real(kind=xp), intent(in) :: m(:)
+      real(kind=xp), intent(in) :: r(:,:), v(:,:)
+
+      real(kind=xp), intent(out) :: Ec, Ep, E
+
+      if (flag_diag) then
+         call compute_energy_diag(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt with fast OpenMP version
+      else
+         call compute_energy(m, r, v, Ec, Ep, E)      ! Compute Ec, Ep, E at t+dt with sequential version
+      end if
+
+   end subroutine compute_energy_wrap
 
 end module physics

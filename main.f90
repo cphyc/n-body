@@ -123,11 +123,7 @@ program n_body
 
          print *, 'Dump', iter, t
 
-         if (flag_diag) then
-            call compute_energy_diag(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt with fast OpenMP version
-         else
-            call compute_energy(m, r, v, Ec, Ep, E)          ! Compute Ec, Ep, E at t+dt with sequential version
-         end if
+         call compute_energy_wrap(m, r, v, Ec, Ep, E)
 
          call write_dump(una, un, iter, Ec, Ep, E, t, r, v)
 
