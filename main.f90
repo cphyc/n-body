@@ -35,16 +35,17 @@ program n_body
    !---------------------------------------------
    ! Compute size of domains                     ! FIXME: Should not depend on flag, rest of code must adapt
    !---------------------------------------------
+   if (IAND(nprocs,nprocs-1) /= 0) stop 'E: The number of MPI_PROC is not a power of 2'
    select case (flag_mpi)
       case(0)
-         N = ceiling(npoints * 0.5 / nprocs)
-      case(1)
-         if (nprocs == 1) then
-            stop 'E: you are trying to parallelize a task that requires 2 or more threads'
-         else if (2**(nint(log(1.0 * nprocs)/log(2.0))) /= nprocs) then
-            print*, 'W: you are trying to parallelize a task that runs better with an even number of threads'
+         if (flag_diag) then
+            N = npoints / (2 * nprocs)
+         else
+            N = npoints / nprocs
          end if
-         N = ceiling(npoints * 1.0 / nprocs)
+      case(1)
+         if (nprocs == 1) stop 'E: you are trying to parallelize a task that requires 2 or more threads'
+         N = npoints / nprocs
       case default
          stop "Unknown value of flag_mpi"
    end select

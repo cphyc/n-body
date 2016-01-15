@@ -147,11 +147,11 @@ contains
             ! Get the domain for integration from the number of nodes
             !--------------------------------
             istart = N*rank + 1
-            iend   = min(istart + N - 1, npoints/2)
+            iend   = istart + N - 1
             if (flag_diag) then
-               call compute_force_diag(m, r, istart, iend, npoints, a)                ! Compute a(t+dt) with fast version
+               call compute_force_diag(m, r, istart, iend, npoints, a)  ! Compute a(t+dt) with fast version
             else
-               call compute_force(m, r, istart*2-1, iend*2, r, 1, npoints, a)         ! Compute a(t+dt) with slow version
+               call compute_force(m, r, istart, iend, r, 1, npoints, a) ! Compute a(t+dt) with slow version
             end if
             !--------------------------------
             ! reduce accelerations
