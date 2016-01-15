@@ -119,7 +119,7 @@ program n_body
       t = t + dt
       iter = iter + 1
 
-      call compute_energy_wrap(N, m, r, v, Ec, Ep, E)
+      call compute_energy_wrap(N, rank, nprocs, m, r, v, Ec, Ep, E)
 
       if (mod(iter, dump_freq) == 0 .and. rank == MASTER) then
 

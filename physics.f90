@@ -358,10 +358,10 @@ contains
 
    end subroutine compute_energy_diag
 
-   subroutine compute_energy_wrap(N, m, r, v, Ec, Ep, E)
+   subroutine compute_energy_wrap(N, rank, nprocs, m, r, v, Ec, Ep, E)
       implicit none
 
-      integer,       intent(in) :: N
+      integer,       intent(in) :: N, rank, nprocs
       real(kind=xp), intent(in) :: m(:)
       real(kind=xp), intent(in) :: r(:,:), v(:,:)
 
