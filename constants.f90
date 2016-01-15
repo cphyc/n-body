@@ -21,7 +21,8 @@ module constants
    integer,         parameter :: dump_freq = 10            ! Frequency at which the system is sampled
 
    logical,         parameter :: flag_diag = .true.        ! Choose force/energy computation subroutine, 0=dummy/1=diag
-   integer,         parameter :: flag_mpi = 0              ! Choose mpi logic, 0=full copy of pos. arrays/1=low mem. impact
+   integer,         parameter :: flag_mpi = 1              ! Choose mpi logic, 0=full copy of pos. arrays/1=low mem. impact
+   integer,         parameter :: MASTER = 0                ! Choose which rank should be chosen as master node
 
    integer :: un, una ! Unit numbers for file operation
 

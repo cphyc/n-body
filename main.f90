@@ -21,7 +21,6 @@ program n_body
    integer         :: err = 0
    integer         :: rank = 0
    integer         :: nprocs = 1                 ! Assumed to be either 1 or pair
-   integer         :: MASTER = 0
    integer         :: N                          ! Length of each block/domain
 
    !---------------------------------------------
