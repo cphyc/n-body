@@ -34,19 +34,19 @@ program n_body
    !---------------------------------------------
    ! Compute size of domains                     ! FIXME: Should not depend on flag, rest of code must adapt
    !---------------------------------------------
-   select case (flag_compute_mpi)
+   select case (flag_mpi)
       case(0)
          N = ceiling(npoints * 0.5 / nprocs)
       case(1)
          N = ceiling(npoints * 1.0 / nprocs)
       case default
-         stop "Unknown value of flag_compute_mpi"
+         stop "Unknown value of flag_mpi"
    end select
 
    !---------------------------------------------
    ! Allocate space                              ! FIXME: See above
    !---------------------------------------------
-   select case (flag_compute_mpi)
+   select case (flag_mpi)
       case(0)
          allocate(m(npoints))
          allocate(r(3, npoints))
@@ -58,13 +58,13 @@ program n_body
          allocate(v(3, N))
          allocate(a(3, N))
       case default
-         stop "Unknown value of flag_compute_mpi"
+         stop "Unknown value of flag_mpi"
    end select
 
    !---------------------------------------------
    ! Read initial positions                      ! FIXME: Not compatible with all code modes, and not really good in MPI_low
    !---------------------------------------------
-   select case (flag_compute_mpi)
+   select case (flag_mpi)
       case(0)
          open(newunit=un, file='initial_conditions.dat', status="old")
          call read_mpos(un, 1, npoints, m, r)
@@ -74,7 +74,7 @@ program n_body
          call read_mpos(un, rank*N + 1, (rank+1)*N + 1, m, r)
          close(un)
       case default
-         stop "Unknown value of flag_compute_mpi"
+         stop "Unknown value of flag_mpi"
    end select
 
    !---------------------------------------------
@@ -123,16 +123,9 @@ program n_body
 
          print *, 'Dump', iter, t
 
-         select case (flag_compute_energy)
-            case(0)
-               call compute_energy(m, r, v, Ec, Ep, E)          ! Compute Ec, Ep, E at t+dt with sequential version
-            case(1)
-               call compute_energy_omp(m, r, v, Ec, Ep, E)      ! Compute Ec, Ep, E at t+dt with naive OpenMP version
-            case(2)
-               call compute_energy_omp_diag(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt with fast OpenMP version
-            case default
-               stop "Unknown value of flag_compute_energy"
-         end select
+         !  call compute_energy(m, r, v, Ec, Ep, E)          ! Compute Ec, Ep, E at t+dt with sequential version
+         !  call compute_energy_omp(m, r, v, Ec, Ep, E)      ! Compute Ec, Ep, E at t+dt with naive OpenMP version
+         call compute_energy_omp_diag(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt with fast OpenMP version
 
          call write_dump(una, un, iter, Ec, Ep, E, t, r, v)
 

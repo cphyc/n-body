@@ -20,16 +20,15 @@ module constants
 
    integer,         parameter :: dump_freq = 10            ! Frequency at which the system is sampled
 
-   integer,         parameter :: flag_compute_force = 3    ! Choose force computation subroutine, 0=seq, 1=seq_diag, 2=omp, 3=omp_diag
-   integer,         parameter :: flag_compute_energy = 2   ! Choose energy computation subroutine, 0=seq, 1=omp, 2=omp_diag
-   integer,         parameter :: flag_compute_mpi = 0      ! Choose mpi logic 0=full copy or pos. arrays, 1=low mem. impact
+   logical,         parameter :: flag_diag = .true.        ! Choose force/energy computation subroutine, 0=dummy/1=diag
+   integer,         parameter :: flag_mpi = 0              ! Choose mpi logic, 0=full copy of pos. arrays/1=low mem. impact
 
    integer :: un, una ! Unit numbers for file operation
 
    public :: xp, MPI_REAL_XP, &
              pi, G, &
              npoints, epsilon2, dt, maxtime, maxiter, &
-             dump_freq, flag_compute_force, flag_compute_energy, flag_compute_mpi, &
+             dump_freq, flag_diag, flag_mpi, &
              un, una
 
 contains
