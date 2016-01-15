@@ -361,11 +361,11 @@ contains
    subroutine compute_energy_wrap(N, rank, nprocs, m, r, v, Ec, Ep, E)
       implicit none
 
-      integer,       intent(in) :: N, rank, nprocs
-      real(kind=xp), intent(in) :: m(:)
-      real(kind=xp), intent(in) :: r(:,:), v(:,:)
+      integer,  intent(in) :: N, rank, nprocs
+      real(xp), intent(in) :: m(:)
+      real(xp), intent(in) :: r(:,:), v(:,:)
 
-      real(kind=xp), intent(out) :: Ec, Ep, E
+      real(xp), intent(out) :: Ec, Ep, E
 
       real(xp), allocatable :: r_gathered(:, :), v_gathered(:, :)
       integer :: err
