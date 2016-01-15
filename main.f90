@@ -87,6 +87,7 @@ program n_body
       print *, '# maxtime:', maxtime
       print *, '# maxiter:', maxiter
       print *, '# nprocs :', nprocs
+      print *, '# N      :', N
 
       !---------------------------------------------
       ! Open files for output, add headers
@@ -112,7 +113,6 @@ program n_body
       call integrate(r, v, dt)    ! Compute r(t+dt)
 
       call compute_force_wrap(N, rank, nprocs, m, r, a)
-      print*, 'After force'
 
       call integrate(v, a, dt/2)  ! Compute v(t+dt)
 
