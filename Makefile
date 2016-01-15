@@ -49,9 +49,10 @@ watch:
 sync:
 	rsync -ahz --progress *{.f90,.sh,.slurm} mesopsl1.obspm.fr:"~/n-body"
 
-run:
+run: all
+	./$(OUTG)
 	/usr/bin/time -f "Total: %es User: %Us System: %Ss CPU: %P" ./$(OUT)
 
-runmpi:
+runmpi: all
 	./$(OUTG)
 	/usr/bin/time -f "Total: %es User: %Us System: %Ss CPU: %P" $(MPIRUN) -n $(MPI_PROC) ./$(OUT)
