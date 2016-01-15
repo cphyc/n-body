@@ -171,7 +171,7 @@ contains
             allocate(r_np_i(3, N))
             allocate(r_right(3, N))
 
-            a_comm = 0._xp
+            a_right = 0._xp
 
             !--------------------------------
             ! Scatter positions across all processes
@@ -222,16 +222,17 @@ contains
                ! compute own interactions
                if (rank == i) then
                   r_right = r_i
-                  call compute_force_diag(m, r, 1, N, N, a_comm)
+                  a_right = 0._xp
+                  call compute_force_diag(m, r, 1, N, N, a)
                   call compute_force_diag(m, r_right, 1, N, N, a_right)
-                  a = a + a_comm
+                  a_comm = a
 
                   ! compute interaction on right side
                else if (rank < i) then
-                  call compute_force(m, r_np_i, 1, N, r_right, 1, N, a_right)
+                  call compute_force(m, r_right, 1, N, r_np_i, 1, N, a_right)
                   ! compute interaction on left side
                else
-                  call compute_force(m, r, 1, N, r_i, 1, N, a_comm)
+                  call compute_force(m, r_i, 1, N, r, 1, N, a_comm)
                   a = a - a_comm
                end if
 
