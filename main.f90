@@ -94,6 +94,8 @@ program n_body
       print *, '# maxiter:', maxiter
       print *, '# nprocs :', nprocs
       print *, '# N      :', N
+      print *, '# diag   :', flag_diag
+      print *, '# mpi    :', flag_mpi
 
       !---------------------------------------------
       ! Open files for output, add headers
