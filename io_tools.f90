@@ -34,22 +34,22 @@ contains
       implicit none
       integer, intent(in) :: u, ua
 
-      write (u, '(10(a16))') 'iter', 't', 'Ep', 'Ec', 'E'
+      write (u, '(10(a16))') 'iter', 't', 'Ep', 'Ec'
       write (ua, '(10(a16))') 'x', 'y', 'z', 'vx', 'vy', 'vz'
 
    end subroutine write_dump_headers
 
-   subroutine write_dump (ua, u, iter, Ec, Ep, E, t, r, v)
+   subroutine write_dump (ua, u, iter, Ec, Ep, t, r, v)
       implicit none
 
-      real(xp), intent(in) :: Ec, Ep, E, t
+      real(xp), intent(in) :: Ec, Ep, t
       real(xp), intent(in) :: r(:,:)
       real(xp), intent(in) :: v(:,:)
       integer,  intent(in) :: ua, u, iter
 
       integer :: i
 
-      write (u, '(i16, 10(e16.8e2))') iter, t, Ep, Ec, E
+      write (u, '(i16, 10(e16.8e2))') iter, t, Ep, Ec
 
       !write (ua, *) iter
       !do i = 1, npoints

@@ -259,22 +259,20 @@ contains
 
    end subroutine compute_force_wrap
 
-   subroutine compute_energy (m, r, v, Ec, Ep, E)
+   subroutine compute_energy (m, r, v, istart, iend, Ec, Ep)
       implicit none
 
       real(xp), intent(in) :: m(:)
       real(xp), intent(in) :: r(:,:), v(:,:)
+      integer,  intent(in) :: istart, iend
 
-      real(xp), intent(out) :: Ec, Ep, E
+      real(xp), intent(out) :: Ec, Ep
 
       integer :: i, j
 
-      Ec = 0._xp
-      Ep = 0._xp
-
       !$OMP PARALLEL REDUCTION(+:Ec,Ep) PRIVATE(j)
       !$OMP DO SCHEDULE(RUNTIME)
-      do i = 1, npoints
+      do i = istart, iend
 
          Ec = Ec + 0.5_xp * m(i) * norm2(v(:,i))**2
 
@@ -291,26 +289,23 @@ contains
       !$OMP END DO
       !$OMP END PARALLEL
 
-      E = Ec + Ep
-
    end subroutine compute_energy
 
-   subroutine compute_energy_diag (m, r, v, Ec, Ep, E)
+   subroutine compute_energy_diag (m, r, v, istart, iend, length, Ec, Ep)
       implicit none
 
       real(xp), intent(in) :: m(:)
       real(xp), intent(in) :: r(:,:), v(:,:)
+      integer,  intent(in) :: istart, iend
+      integer,  intent(in) :: length
 
-      real(xp), intent(out) :: Ec, Ep, E
+      real(xp), intent(out) :: Ec, Ep
 
       integer :: i, j, k
 
-      Ec = 0._xp
-      Ep = 0._xp
-
       !$OMP PARALLEL REDUCTION(+:Ec,Ep) PRIVATE(j,k)
       !$OMP DO SCHEDULE(RUNTIME)
-      do i = 1, npoints/2
+      do i = istart, iend
 
          Ec = Ec + 0.5_xp * m(i) * norm2(v(:,i))**2
 
@@ -320,7 +315,7 @@ contains
 
          end do
 
-         k = npoints + 1 - i
+         k = length + 1 - i
          Ec = Ec + 0.5_xp * m(k) * norm2(v(:,k))**2
 
          do j = 1, k-1
@@ -333,33 +328,46 @@ contains
       !$OMP END DO
       !$OMP END PARALLEL
 
-      E = Ec + Ep
-
    end subroutine compute_energy_diag
 
-   subroutine compute_energy_wrap(N, rank, nprocs, m, r, v, Ec, Ep, E)
+   subroutine compute_energy_wrap(N, rank, nprocs, m, r, v, Ec, Ep)
       implicit none
 
       integer,  intent(in) :: N, rank, nprocs
       real(xp), intent(in) :: m(:)
       real(xp), intent(in) :: r(:,:), v(:,:)
 
-      real(xp), intent(out) :: Ec, Ep, E
+      real(xp), intent(out) :: Ec, Ep
+
+      integer  :: istart, iend
+      real(xp) :: Ec_loc, Ep_loc
 
       real(xp), allocatable :: r_gathered(:, :), v_gathered(:, :), m_gathered(:)
 
       integer :: err
 
+      Ec = 0._xp
+      Ep = 0._xp
 
       select case(flag_mpi)
       case(0)
-         if (rank == MASTER) then
-            if (flag_diag) then
-               call compute_energy_diag(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt with fast version
-            else
-               call compute_energy(m, r, v, Ec, Ep, E)      ! Compute Ec, Ep, E at t+dt with slow version
-            end if
+         !--------------------------------
+         ! Get the domain for integration from the number of nodes
+         !--------------------------------
+         istart = N*rank + 1
+         iend   = istart + N - 1
+         Ec_loc = 0._xp
+         Ep_loc = 0._xp
+         if (flag_diag) then
+            call compute_energy_diag(m, r, v, istart, iend, npoints, Ec_loc, Ep_loc) ! Compute Ec & Ep at t+dt with fast version
+         else
+            call compute_energy(m, r, v, istart, iend, Ec_loc, Ep_loc)      ! Compute Ec & Ep at t+dt with slow version
          end if
+         !--------------------------------
+         ! reduce accelerations
+         !--------------------------------
+         call mpi_reduce(Ec_loc, Ec, 1, MPI_REAL_XP, MPI_SUM, MASTER, MPI_COMM_WORLD, err)
+         call mpi_reduce(Ep_loc, Ep, 1, MPI_REAL_XP, MPI_SUM, MASTER, MPI_COMM_WORLD, err)
       case(1)
          ! gather r and v on master node
          if (rank == MASTER) then
@@ -375,9 +383,11 @@ contains
          if (rank == MASTER) then
 
             if (flag_diag) then
-               call compute_energy_diag(m_gathered, r_gathered, v_gathered, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt with fast version
+               call compute_energy_diag(m_gathered, r_gathered, v_gathered, 1, npoints, npoints, Ec, Ep) ! Compute Ec & Ep at t+dt with fast version
             else
-               call compute_energy(m_gathered, r_gathered, v_gathered, Ec, Ep, E)      ! Compute Ec, Ep, E at t+dt with slow version
+               ! TODO: This would be broken when computing using subdomains, because Ec must not be calculated elsewhere than the
+               ! real diag
+               call compute_energy(m_gathered, r_gathered, v_gathered, 1, npoints, Ec, Ep)      ! Compute Ec & Ep at t+dt with slow version
             end if
 
             deallocate(r_gathered)

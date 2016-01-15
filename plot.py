@@ -18,7 +18,7 @@ if __name__ == '__main__':
     # Plot
     plt.plot(data.t, data.Ep, label='$Ep$')
     plt.plot(data.t, data.Ec, label='$Ec$')
-    plt.plot(data.t, data.E, label='$E_\mathrm{tot}$')
+    plt.plot(data.t, data.Ep+data.Ec, label='$E_\mathrm{tot}$')
 
     plt.xlabel('Time (arbitrary unit)')
     plt.ylabel('Energy (arbitrary unit)')
@@ -29,7 +29,7 @@ if __name__ == '__main__':
     plt.figure()
 
     deltaEc = data.Ec.max() - data.Ec.min()
-    deltaE = data.E - data.E.mean()
+    deltaE = data.Ep+data.Ec - (data.Ec.mean() + data.Ep.mean())
 
     plt.plot(data.t, deltaE/deltaEc, label='$\\frac{E_\mathrm{tot} - \\overline{E_\mathrm{tot}}}{Ec_\mathrm{max} - Ec_\mathrm{min}}$')
 
