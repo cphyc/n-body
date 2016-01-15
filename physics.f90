@@ -136,7 +136,6 @@ contains
 
       integer :: istart, iend
 
-      logical :: debug = .true.
 !      integer :: jstart, jend
 
       a = 0._xp
@@ -182,16 +181,11 @@ contains
                ! Get data from nprocs-i in i
                ! Note: use nprocs-i, because nprocs start at 0
 
-               if (debug) print*, 'R:', rank, 'i:', i
                if (rank == nprocs-i-1) then
-                  if (debug) print*, 'R:', rank, '(1/2) sends to:', i
                   call mpi_send(r, 3*N, MPI_REAL_XP, i, 0, MPI_COMM_WORLD, err)
                else if (rank == i) then
-                  if (debug) print*, 'R:', rank, '(1/2) get from:', nprocs-i-1
                   call mpi_recv(r_right, 3*N, MPI_REAL_XP, nprocs-i-1, 0, MPI_COMM_WORLD, stat, err)
                end if
-
-               if (debug) call mpi_barrier(MPI_COMM_WORLD, err)
 
                if (rank == i) then
                   r_i = r
@@ -199,19 +193,11 @@ contains
                   r_np_i = r
                end if
 
-               if (rank == i) then
-                  if (debug) print*, 'R:', rank, '(1) broadcasts'
-               end if
                ! Broadcast i-th data
                call mpi_bcast(r_i, 3*N, MPI_REAL_XP, i, MPI_COMM_WORLD, err)
-               if (debug) call mpi_barrier(MPI_COMM_WORLD, err)
 
-               if (rank == nprocs-i-1) then
-                  if (debug) print*, 'R:', rank, '(2) broadcasts'
-               end if
                ! Broadcast n-i-th data
                call mpi_bcast(r_np_i, 3*N, MPI_REAL_XP, nprocs-i-1, MPI_COMM_WORLD, err)
-               if (debug) call mpi_barrier(MPI_COMM_WORLD, err)
 
                ! compute own interactions
                a_comm_i = 0._xp
@@ -238,54 +224,25 @@ contains
 
                end if
 
-               if (rank == i) then
-                  if (debug) print*, 'R:', rank, 'getting reduce'
-               else
-                  if (debug) print*, 'R:', rank, 'sending reduce to', i
-               end if
-
                ! Receive interaction in i
                call mpi_reduce(a_comm_i,    a, 3*N, MPI_REAL_XP, MPI_SUM,          i, MPI_COMM_WORLD, err)
-
-               if (rank == nprocs-i-1) then
-                  if (debug) print*, 'R:', rank, 'getting reduce'
-               else
-                  if (debug) print*, 'R:', rank, 'sending reduce to', nprocs-i-1
-               end if
 
                ! Receive interaction in np-i-1
                call mpi_reduce(a_comm_np_i, a, 3*N, MPI_REAL_XP, MPI_SUM, nprocs-i-1, MPI_COMM_WORLD, err)
 
-               if (debug) call mpi_barrier(MPI_COMM_WORLD, err)
-
-               if (rank == 0) then
-                  if (debug) print*, ''
-               end if
             end do
 
             !--------------------------------
             ! Gather missing data
             !--------------------------------
-            if (rank == 0 .and. debug) then
-               print*, 'Exchanging data'
-            end if
             do i = 0, nprocs / 2 - 1
                if (rank == i) then
-                  if (debug) print*, 'R:', i, '(2/2) sends to:', nprocs-i-1
                   call mpi_send(a_right, 3*N, MPI_REAL_XP, nprocs-i-1, 0, MPI_COMM_WORLD, err)
-                  
                else if (rank == nprocs-i-1) then
-                  if (debug) print*, 'R:', rank, '(2/2) gets from:', i
                   call mpi_recv(a_comm_i, 3*N, MPI_REAL_XP, i, 0, MPI_COMM_WORLD, stat, err)
                   a = a + a_comm_i
                end if
-               if (debug) call mpi_barrier(MPI_COMM_WORLD, err)
             end do
-            if (debug) call mpi_barrier(MPI_COMM_WORLD, err)
-            if (rank == 0 .and. debug) then
-               print*, 'Exchanged'
-               print*, ''
-            end if
             deallocate(a_comm_i)
             deallocate(a_comm_np_i)
             deallocate(a_right)
