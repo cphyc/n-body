@@ -29,7 +29,9 @@ MPIRUN=mpirun
 OUT=simul
 OUTG=gen
 
-all: constants.o physics.o io_tools.o main.o
+all: gen simul
+
+simul: constants.o physics.o io_tools.o main.o
 	$(GC) $(LFLAGS) $^ -o $(OUT)
 
 gen: constants.o main_gen.o
@@ -51,4 +53,5 @@ run:
 	/usr/bin/time -f "Total: %es User: %Us System: %Ss CPU: %P" ./$(OUT)
 
 runmpi:
+	./$(OUTG)
 	/usr/bin/time -f "Total: %es User: %Us System: %Ss CPU: %P" $(MPIRUN) -n $(MPI_PROC) ./$(OUT)
