@@ -367,7 +367,7 @@ contains
 
       real(xp), intent(out) :: Ec, Ep, E
 
-      real(xp), allocatable :: r_gathered(:, :), v_gathered(:, :)
+      real(xp), allocatable :: r_gathered(:, :), v_gathered(:, :), m_gathered(:)
       integer :: err
 
 
@@ -385,21 +385,24 @@ contains
          if (rank == MASTER) then
             allocate(r_gathered(3, npoints))
             allocate(v_gathered(3, npoints))
+            allocate(m_gathered(npoints))
          end if
 
          call mpi_gather(r, 3*N, MPI_REAL_XP, r_gathered, 3*N, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)
          call mpi_gather(v, 3*N, MPI_REAL_XP, v_gathered, 3*N, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)
+         call mpi_gather(m,   N, MPI_REAL_XP, m_gathered,   N, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)
 
          if (rank == MASTER) then
 
             if (flag_diag) then
-               call compute_energy_diag(m, r_gathered, v_gathered, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt with fast version
+               call compute_energy_diag(m_gathered, r_gathered, v_gathered, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt with fast version
             else
-               call compute_energy(m, r_gathered, v_gathered, Ec, Ep, E)      ! Compute Ec, Ep, E at t+dt with slow version
+               call compute_energy(m_gathered, r_gathered, v_gathered, Ec, Ep, E)      ! Compute Ec, Ep, E at t+dt with slow version
             end if
 
             deallocate(r_gathered)
             deallocate(v_gathered)
+            deallocate(m_gathered)
 
          end if
       case default
