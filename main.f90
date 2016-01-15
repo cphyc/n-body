@@ -48,10 +48,10 @@ program n_body
    !---------------------------------------------
    select case (flag_compute_mpi)
       case(0)
-         allocate(m(N*2))
-         allocate(r(3, N*2))
-         allocate(v(3, N*2))
-         allocate(a(3, N*2))
+         allocate(m(npoints))
+         allocate(r(3, npoints))
+         allocate(v(3, npoints))
+         allocate(a(3, npoints))
       case(1)
          allocate(m(N))
          allocate(r(3, N))
@@ -94,7 +94,7 @@ program n_body
       open(newunit=una, file='output.dat', status="replace")
       open(newunit=un, file='output_int.dat', status="replace")
 
-      call write_dump_headers(un,una)
+      call write_dump_headers(un, una)
    end if
 
    !---------------------------------------------
@@ -111,8 +111,8 @@ program n_body
       call integrate(v, a, dt/2)  ! Compute v(t+dt/2)
       call integrate(r, v, dt)    ! Compute r(t+dt)
 
-      !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ FIX BELOW
       call compute_force_wrap(N, rank, nprocs, m, r, a)
+      print*, 'After force'
 
       call integrate(v, a, dt/2)  ! Compute v(t+dt)
 
@@ -141,12 +141,17 @@ program n_body
    end do
 
    !---------------------------------------------
-   ! Close files
+   ! Close files and free allocated
    !---------------------------------------------
    if (rank == MASTER) then
       close(un)
       close(una)
    end if
+   
+   deallocate(m)
+   deallocate(r)
+   deallocate(v)
+   deallocate(a)
 
    !---------------------------------------------
    ! Stop MPI

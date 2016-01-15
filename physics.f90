@@ -256,11 +256,11 @@ contains
                case default
                   stop "Unknown value of flag_compute_force"
             end select
-               !--------------------------------
-               ! reduce accelerations
-               !--------------------------------
-               call mpi_allreduce(a, a_reduced, npoints*3, MPI_REAL_XP, MPI_SUM, MPI_COMM_WORLD, err)
-               a = a_reduced
+            !--------------------------------
+            ! reduce accelerations
+            !--------------------------------
+            call mpi_allreduce(a, a_reduced, npoints*3, MPI_REAL_XP, MPI_SUM, MPI_COMM_WORLD, err)
+            a = a_reduced
          case(1)
             !--------------------------------
             ! Scatter positions across all processes
@@ -324,6 +324,13 @@ contains
          case default
             stop "Unknown value of flag_compute_mpi"
       end select
+
+      deallocate(a_comm)
+      deallocate(a_right)
+      deallocate(a_reduced)
+      deallocate(r_i)
+      deallocate(r_np_i)
+      deallocate(r_right)
 
    end subroutine compute_force_wrap
 

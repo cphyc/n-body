@@ -19,6 +19,7 @@ module constants
    integer,         parameter :: maxiter = nint(maxtime/dt) ! Number of iteration
 
    integer,         parameter :: dump_freq = 10            ! Frequency at which the system is sampled
+
    integer,         parameter :: flag_compute_force = 3    ! Choose force computation subroutine, 0=seq, 1=seq_diag, 2=omp, 3=omp_diag
    integer,         parameter :: flag_compute_energy = 2   ! Choose energy computation subroutine, 0=seq, 1=omp, 2=omp_diag
    integer,         parameter :: flag_compute_mpi = 0      ! Choose mpi logic 0=full copy or pos. arrays, 1=low mem. impact
