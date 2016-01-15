@@ -107,10 +107,16 @@ program n_body
    end if
 
    !---------------------------------------------
-   ! Compute initial speeds and accelerations
+   ! Compute initial speeds, energy and accelerations
    !---------------------------------------------
    call initial_speeds(r, v)
    call compute_force_wrap(N, rank, nprocs, m, r, a)
+   call compute_energy_wrap(N, rank, nprocs, m, r, v, Ec, Ep)
+
+   if (rank == MASTER) then
+      print *, 'Dump', iter, t
+      call write_dump(una, un, iter, Ec, Ep, t, r, v)
+   end if
 
    !---------------------------------------------
    ! Loop over time
