@@ -12,7 +12,7 @@ program n_body
    real(kind = xp) :: v(3,npoints)               ! Speeds of the particles (3-dim vectors)
    real(kind = xp) :: a(3,npoints)               ! Acceleration of the particles (3-dim vectors)
    real(kind = xp), allocatable :: a_comm(:, :), a_right(:, :)
-   real(kind = xp), allocatable :: r_other(:, :), r_right(:, :)
+   real(kind = xp), allocatable :: r_i(:, :), r_np_i(:, :), r_right(:, :)
    real(kind = xp) :: a_reduced(3,npoints)
    real(kind = xp) :: Ec                         ! Total kinetic energy
    real(kind = xp) :: Ep                         ! Total potential energy
@@ -40,11 +40,34 @@ program n_body
    call mpi_comm_rank(mpi_comm_world, rank, err)
 
    !---------------------------------------------
+   ! Compute number of domains
+   !---------------------------------------------
+   domain_size = ceiling(npoints * 1.0 / nprocs)
+   N = ceiling(1._xp * npoints / nprocs)
+
+   !---------------------------------------------
    ! Read initial positions
    !---------------------------------------------
    open(newunit=un, file='initial_conditions.dat', status="old")
-   call read_mpos(un, m, r)
+   call read_mpos(un, rank*N + 1, (rank+1)*N + 1, m, r)
    close(un)
+
+   !---------------------------------------------
+   ! Compute initial speeds and accelerations
+   !---------------------------------------------
+   call initial_speeds(r, v)
+   istart = 1
+   iend = npoints
+   select case (flag_compute_force)
+      case(0)
+         call compute_force(m, r, istart, iend, a)
+      case(1)
+         call compute_force_omp(m, r, istart, iend, a)
+      case(2)
+         call compute_force_omp_nn_1(m, r, istart, iend, a)
+      case default
+         stop "Unknown value of flag_compute_force"
+   end select
 
    !---------------------------------------------
    ! Print parameters
@@ -98,7 +121,6 @@ program n_body
       call integrate(v, a, dt/2)  ! Compute v(t+dt/2)
       call integrate(r, v, dt)    ! Compute r(t+dt)
 
-
       select case(flag_compute_mpi)
          case(0)
             !--------------------------------
@@ -135,27 +157,31 @@ program n_body
                     MPI_COMM_WORLD, stat, err)
 
                if (rank == i) then
-                  r_other = r
+                  r_i = r
+               else if (rank == nprocs - i)
+                  r_np_i = r
                end if
 
                ! Broadcast i-th data
-               call mpi_bcast(r_other, 3*N, MPI_REAL_XP, i, MPI_COMM_WORLD, err)
+               call mpi_bcast(r_i, 3*N, MPI_REAL_XP, i, MPI_COMM_WORLD, err)
+               ! Broadcast n-i-th data
+               call mpi_bcast(r_np_i, 3*N, MPI_REAL_XP, nprocs - i, MPI_COMM_WORLD, err)
 
                ! If i == rank, compute both diagonals
                if (rank == i) then
-                  r_right = r_other
+                  r_right = r_i
                   call compute_force_diag(m, r, r, a)
                   call compute_force_diag(m, r_right, r_right, a_right)
                   a_comm = a
 
                   ! compute on right side but communicate nothing
                else if (rank < i) then
-                  call compute_force(m, r_other, r_right, a_right)
+                  call compute_force(m, r_np_i, r_right, a_right)
                   a_comm = 0._xp
 
                   ! compute on left side and communicate interaction
                else
-                  call compute_force(m, r, r_other, a_comm)
+                  call compute_force(m, r, r_i, a_comm)
                   a = a - a_comm
                end if
 
@@ -186,7 +212,6 @@ program n_body
             stop "Unknown value of flag_compute_mpi"
       end select
       !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ FIX BELOW
-
       !--------------------------------
       ! reduce accelerations
       !--------------------------------
