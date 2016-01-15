@@ -9,7 +9,7 @@ private
 
 public :: initial_speeds, integrate, &
           compute_force_wrap, &
-          compute_energy, compute_energy_omp, compute_energy_omp_diag
+          compute_energy, compute_energy_diag
 
 contains
 
@@ -259,35 +259,6 @@ contains
       Ec = 0._xp
       Ep = 0._xp
 
-      do i = 1, npoints
-
-         Ec = Ec + 0.5_xp * m(i) * norm2(v(:,i))**2
-
-         do j = i+1, npoints
-
-            Ep = Ep - G * m(j) * m(i) / sqrt(norm2(r(:, i) - r(:, j))**2 + epsilon2)
-
-         end do
-
-      end do
-
-      E = Ec + Ep
-
-   end subroutine compute_energy
-
-   subroutine compute_energy_omp (m, r, v, Ec, Ep, E)
-      implicit none
-
-      real(kind=xp), intent(in) :: m(:)
-      real(kind=xp), intent(in) :: r(:,:), v(:,:)
-
-      real(kind=xp), intent(out) :: Ec, Ep, E
-
-      integer :: i, j
-
-      Ec = 0._xp
-      Ep = 0._xp
-
       !$OMP PARALLEL REDUCTION(+:Ec,Ep) PRIVATE(j)
       !$OMP DO SCHEDULE(RUNTIME)
       do i = 1, npoints
@@ -308,9 +279,9 @@ contains
 
       E = Ec + Ep
 
-   end subroutine compute_energy_omp
+   end subroutine compute_energy
 
-   subroutine compute_energy_omp_diag (m, r, v, Ec, Ep, E)
+   subroutine compute_energy_diag (m, r, v, Ec, Ep, E)
      implicit none
 
      real(kind=xp), intent(in) :: m(:)
@@ -350,6 +321,6 @@ contains
 
      E = Ec + Ep
 
-   end subroutine compute_energy_omp_diag
+   end subroutine compute_energy_diag
 
 end module physics

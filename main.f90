@@ -123,9 +123,11 @@ program n_body
 
          print *, 'Dump', iter, t
 
-         !  call compute_energy(m, r, v, Ec, Ep, E)          ! Compute Ec, Ep, E at t+dt with sequential version
-         !  call compute_energy_omp(m, r, v, Ec, Ep, E)      ! Compute Ec, Ep, E at t+dt with naive OpenMP version
-         call compute_energy_omp_diag(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt with fast OpenMP version
+         if (flag_diag) then
+            call compute_energy_diag(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt with fast OpenMP version
+         else
+            call compute_energy(m, r, v, Ec, Ep, E)          ! Compute Ec, Ep, E at t+dt with sequential version
+         end if
 
          call write_dump(una, un, iter, Ec, Ep, E, t, r, v)
 
@@ -140,7 +142,7 @@ program n_body
       close(un)
       close(una)
    end if
-   
+
    deallocate(m)
    deallocate(r)
    deallocate(v)
