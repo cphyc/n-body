@@ -14,8 +14,8 @@ contains
    subroutine initial_speeds (r, v)
       implicit none
 
-      real(kind = xp), intent(in)  :: r(:,:)
-      real(kind = xp), intent(out) :: v(:,:)
+      real(xp), intent(in)  :: r(:,:)
+      real(xp), intent(out) :: v(:,:)
 
       v(1, :) =   r(2, :)
       v(2, :) = - r(1, :)
@@ -40,14 +40,14 @@ contains
    subroutine compute_force (m, r1, istart, iend, r2, jstart, jend, a)
       implicit none
 
-      real(kind=xp), intent(in) :: m(:)
-      real(kind=xp), intent(in) :: r1(:, :), r2(:, :)
-      integer,       intent(in) :: istart, iend, jstart, jend
+      real(xp), intent(in) :: m(:)
+      real(xp), intent(in) :: r1(:, :), r2(:, :)
+      integer,  intent(in) :: istart, iend, jstart, jend
 
-      real(kind=xp), intent(inout) :: a(:, :)
+      real(xp), intent(inout) :: a(:, :)
 
-      real(kind=xp) :: vec(3), tmp(3)
-      integer :: i, j
+      real(xp) :: vec(3), tmp(3)
+      integer  :: i, j
 
       ! No REDUCTION(+:a) because only one thread is modifying a(:,i)
       !$OMP PARALLEL PRIVATE(j, vec, tmp)
@@ -73,15 +73,15 @@ contains
    subroutine compute_force_diag (m, r, istart, iend, length, a)
       implicit none
 
-      real(kind=xp), intent(in) :: m(:)
-      real(kind=xp), intent(in) :: r(:,:)
-      integer,       intent(in) :: istart, iend
-      integer,       intent(in) :: length
+      real(xp), intent(in) :: m(:)
+      real(xp), intent(in) :: r(:,:)
+      integer,  intent(in) :: istart, iend
+      integer,  intent(in) :: length
 
-      real(kind=xp), intent(inout) :: a(:,:)
+      real(xp), intent(inout) :: a(:,:)
 
-      real(kind=xp) :: vec(3), tmp(3)
-      integer :: i, j, k
+      real(xp) :: vec(3), tmp(3)
+      integer  :: i, j, k
 
       !$OMP PARALLEL PRIVATE(j, k, vec, tmp) REDUCTION(+:a)
       !$OMP DO SCHEDULE(RUNTIME)
@@ -130,14 +130,14 @@ contains
       real(xp), allocatable :: r_i(:, :), r_np_i(:, :), r_right(:, :)
       real(xp), allocatable :: a_reduced(:, :)
 
-      integer         :: err = 0
-      integer         :: stat(MPI_STATUS_SIZE)
-      integer         :: i                          ! Counter for elements
+      integer :: err = 0
+      integer :: stat(MPI_STATUS_SIZE)
+      integer :: i                          ! Counter for elements
 
-      integer         :: istart, iend
+      integer :: istart, iend
 
       logical :: debug = .false.
-!      integer         :: jstart, jend
+!      integer :: jstart, jend
 
       a = 0._xp
 
@@ -295,10 +295,10 @@ contains
    subroutine compute_energy (m, r, v, Ec, Ep, E)
       implicit none
 
-      real(kind=xp), intent(in) :: m(:)
-      real(kind=xp), intent(in) :: r(:,:), v(:,:)
+      real(xp), intent(in) :: m(:)
+      real(xp), intent(in) :: r(:,:), v(:,:)
 
-      real(kind=xp), intent(out) :: Ec, Ep, E
+      real(xp), intent(out) :: Ec, Ep, E
 
       integer :: i, j
 
@@ -331,10 +331,10 @@ contains
    subroutine compute_energy_diag (m, r, v, Ec, Ep, E)
       implicit none
 
-      real(kind=xp), intent(in) :: m(:)
-      real(kind=xp), intent(in) :: r(:,:), v(:,:)
+      real(xp), intent(in) :: m(:)
+      real(xp), intent(in) :: r(:,:), v(:,:)
 
-      real(kind=xp), intent(out) :: Ec, Ep, E
+      real(xp), intent(out) :: Ec, Ep, E
 
       integer :: i, j, k
 
@@ -380,6 +380,7 @@ contains
       real(xp), intent(out) :: Ec, Ep, E
 
       real(xp), allocatable :: r_gathered(:, :), v_gathered(:, :), m_gathered(:)
+
       integer :: err
 
 

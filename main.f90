@@ -7,21 +7,23 @@ program n_body
 
    implicit none
 
-   real(kind = xp), allocatable :: m(:)                 ! Masses of the particles
-   real(kind = xp), allocatable :: r(:, :)               ! Positions of the particles (3-dim vectors)
-   real(kind = xp), allocatable :: v(:, :)               ! Speeds of the particles (3-dim vectors)
-   real(kind = xp), allocatable :: a(:, : )               ! Acceleration of the particles (3-dim vectors)
-   real(kind = xp) :: Ec                         ! Total kinetic energy
-   real(kind = xp) :: Ep                         ! Total potential energy
-   real(kind = xp) :: E                          ! Total energy
+   real(xp), allocatable :: m(:)     ! Masses of the particles
+   real(xp), allocatable :: r(:, :)  ! Positions of the particles (3-dim vectors)
+   real(xp), allocatable :: v(:, :)  ! Speeds of the particles (3-dim vectors)
+   real(xp), allocatable :: a(:, :)  ! Acceleration of the particles (3-dim vectors)
+   real(xp)              :: Ec       ! Total kinetic energy
+   real(xp)              :: Ep       ! Total potential energy
+   real(xp)              :: E        ! Total energy
 
-   real(kind = xp) :: t  = 0._xp                 ! Total time elapsed in the simulation
-   integer         :: iter = 0                   ! Number of iterations ran
+   ! Counters for the main loop
+   real(xp):: t  = 0._xp ! Total time elapsed in the simulation
+   integer :: iter = 0   ! Number of iterations ran
 
-   integer         :: err = 0
-   integer         :: rank = 0
-   integer         :: nprocs = 1                 ! Assumed to be either 1 or pair
-   integer         :: N                          ! Length of each block/domain
+   ! Variables for MPI
+   integer :: err = 0    ! Store MPI error code resulting from MPI calls
+   integer :: nprocs = 1 ! Must be a power of 2, default to 1 when we don’t run with MPI
+   integer :: rank = 0   ! Rank of the tasks among the nprocs, start at 0 and default to this for running without MPI
+   integer :: N          ! Length of each block/domain for the MPI nodes
 
    !---------------------------------------------
    ! Initialize MPI

@@ -13,8 +13,8 @@ contains
 
       integer, intent(in) :: u, start, end
 
-      real(kind = xp), intent(out) :: m(:)
-      real(kind = xp), intent(out) :: r(:,:)
+      real(xp), intent(out) :: m(:)
+      real(xp), intent(out) :: r(:,:)
 
       integer :: i
 
@@ -42,10 +42,10 @@ contains
    subroutine write_dump (ua, u, iter, Ec, Ep, E, t, r, v)
       implicit none
 
-      real(kind=xp), intent(in) :: Ec, Ep, E, t
-      real(kind=xp), intent(in) :: r(:,:)
-      real(kind=xp), intent(in) :: v(:,:)
-      integer,       intent(in) :: ua, u, iter
+      real(xp), intent(in) :: Ec, Ep, E, t
+      real(xp), intent(in) :: r(:,:)
+      real(xp), intent(in) :: v(:,:)
+      integer,  intent(in) :: ua, u, iter
 
       integer :: i
 

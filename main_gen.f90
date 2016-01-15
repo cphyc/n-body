@@ -2,8 +2,8 @@ program gen
 
    use constants
 
-   integer(kind=4)   :: ios     ! I/O test variable
-   integer           :: i       ! Points iteration variable
+   integer  :: ios     ! I/O test variable
+   integer  :: i       ! Points iteration variable
 
    real(xp) :: x, y, z
    real(xp) :: radius
@@ -11,7 +11,7 @@ program gen
 
    mass = 1._xp / npoints
 
-   open(unit=12, file="initial_conditions.dat", action="write", iostat=ios)
+   open(newunit=un, file="initial_conditions.dat", action="write", status="replace", iostat=ios)
    if (ios /= 0) stop "OPENING initial_conditions.dat ERROR"
 
    do i = 1, npoints
@@ -29,10 +29,10 @@ program gen
          radius = x**2 + y**2 + z**2
       end do
 
-      write(12, '(4(e16.8e2))') x, y, z, mass
+      write(un, '(4(e16.8e2))') x, y, z, mass
 
    end do
 
-   close(12)
+   close(un)
 
 end program gen
