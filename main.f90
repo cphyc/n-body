@@ -158,7 +158,7 @@ program n_body
 
                if (rank == i) then
                   r_i = r
-               else if (rank == nprocs - i)
+               else if (rank == nprocs - i) then
                   r_np_i = r
                end if
 
