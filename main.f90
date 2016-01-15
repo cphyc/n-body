@@ -7,13 +7,13 @@ program n_body
 
    implicit none
 
-   real(kind = xp) :: m(npoints)                 ! Masses of the particles
-   real(kind = xp) :: r(3,npoints)               ! Positions of the particles (3-dim vectors)
-   real(kind = xp) :: v(3,npoints)               ! Speeds of the particles (3-dim vectors)
-   real(kind = xp) :: a(3,npoints)               ! Acceleration of the particles (3-dim vectors)
+   real(kind = xp), allocatable :: m(:)                 ! Masses of the particles
+   real(kind = xp), allocatable :: r(:, :)               ! Positions of the particles (3-dim vectors)
+   real(kind = xp), allocatable :: v(:, :)               ! Speeds of the particles (3-dim vectors)
+   real(kind = xp), allocatable :: a(:, : )               ! Acceleration of the particles (3-dim vectors)
    real(kind = xp), allocatable :: a_comm(:, :), a_right(:, :)
    real(kind = xp), allocatable :: r_i(:, :), r_np_i(:, :), r_right(:, :)
-   real(kind = xp) :: a_reduced(3,npoints)
+   real(kind = xp), allocatable :: a_reduced(:, :)
    real(kind = xp) :: Ec                         ! Total kinetic energy
    real(kind = xp) :: Ep                         ! Total potential energy
    real(kind = xp) :: E                          ! Total energy
@@ -46,6 +46,20 @@ program n_body
    N = ceiling(1._xp * npoints / nprocs)
 
    !---------------------------------------------
+   ! Allocate space
+   !---------------------------------------------
+   allocate(m(N))
+   allocate(r(3, N))
+   allocate(v(3, N))
+   allocate(a(3, N))
+   allocate(a_comm(3, N))
+   allocate(a_right(3, N))
+   allocate(a_reduced(3, N))
+   allocate(r_i(3, N))
+   allocate(r_np_i(3, N))
+   allocate(r_right(3, N))
+
+   !---------------------------------------------
    ! Read initial positions
    !---------------------------------------------
    open(newunit=un, file='initial_conditions.dat', status="old")
@@ -60,11 +74,11 @@ program n_body
    iend = npoints
    select case (flag_compute_force)
       case(0)
-         call compute_force(m, r, istart, iend, a)
+         call compute_force(m, r, istart, iend, r, istart, iend, a)
       case(1)
-         call compute_force_omp(m, r, istart, iend, a)
+         call compute_force_omp(m, r, istart, iend, r, istart, iend, a)
       case(2)
-         call compute_force_omp_nn_1(m, r, istart, iend, a)
+         call compute_force_omp_nn_1(m, r, istart, iend, r, istart, iend, a)
       case default
          stop "Unknown value of flag_compute_force"
    end select
