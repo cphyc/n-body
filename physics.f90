@@ -141,7 +141,7 @@ contains
 
       integer         :: istart, iend
 
-      logical :: debug = .false.
+      logical :: debug = .true.
 !      integer         :: jstart, jend
 
       select case(flag_mpi)
@@ -386,13 +386,14 @@ contains
          call mpi_gather(v, 3*N, MPI_REAL_XP, v_gathered, 3*npoints, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)
       end select
 
-      if (flag_diag) then
-         call compute_energy_diag(m, r_gathered, v_gathered, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt with fast OpenMP version
-      else
-         call compute_energy(m, r_gathered, v_gathered, Ec, Ep, E)      ! Compute Ec, Ep, E at t+dt with sequential version
-      end if
-
       if (rank == MASTER) then
+
+         if (flag_diag) then
+            call compute_energy_diag(m, r_gathered, v_gathered, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt with fast OpenMP version
+         else
+            call compute_energy(m, r_gathered, v_gathered, Ec, Ep, E)      ! Compute Ec, Ep, E at t+dt with sequential version
+         end if
+
          deallocate(r_gathered)
          deallocate(v_gathered)
       end if
