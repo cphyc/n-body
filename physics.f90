@@ -126,7 +126,7 @@ contains
 
       real(xp), intent(out) :: a(:,:)
 
-      real(xp), allocatable :: a_comm(:, :), a_right(:, :)
+      real(xp), allocatable :: a_comm_i(:, :), a_comm_np_i(:, :), a_right(:, :)
       real(xp), allocatable :: r_i(:, :), r_np_i(:, :), r_right(:, :)
       real(xp), allocatable :: a_reduced(:, :)
 
@@ -164,7 +164,8 @@ contains
             !--------------------------------
             ! Allocate and initialize
             !--------------------------------
-            allocate(a_comm(3, N))
+            allocate(a_comm_i(3, N))
+            allocate(a_comm_np_i(3, N))
             allocate(a_right(3, N))
             allocate(r_i(3, N))
             allocate(r_np_i(3, N))
@@ -213,20 +214,28 @@ contains
                if (debug) call mpi_barrier(MPI_COMM_WORLD, err)
 
                ! compute own interactions
-               a_comm = 0._xp
+               a_comm_i = 0._xp
+               a_comm_np_i = 0._xp
                if (rank == i) then
                   a_right = 0._xp
                   call compute_force_diag(m, r, 1, N, N, a)
                   call compute_force_diag(m, r_right, 1, N, N, a_right)
-                  a_comm = a
+                  a_comm_i = a
 
                   ! compute interaction on right side
                else if (rank < i) then
-                  call compute_force(m, r_right, 1, N, r_np_i, 1, N, a_right)
+                  call compute_force(m, r_np_i, 1, N, r_right, 1, N, a_comm_np_i)
+                  a_right = a_right - a_comm_np_i
+
                   ! compute interaction on left side
                else
-                  call compute_force(m, r_i, 1, N, r, 1, N, a_comm)
-                  a = a - a_comm ! FIXME: False with different masses
+                  call compute_force(m, r_i, 1, N, r, 1, N, a_comm_i)
+                  a = a - a_comm_i ! FIXME: False with different masses
+
+                  if (rank == nprocs - i - 1) then
+                     a_comm_np_i = a
+                  end if
+
                end if
 
                if (rank == i) then
@@ -234,8 +243,13 @@ contains
                else
                   if (debug) print*, 'R:', rank, 'sending reduce'
                end if
+
                ! Receive interaction in i
-               call mpi_reduce(a_comm, a, 3*N, MPI_REAL_XP, MPI_SUM, i, MPI_COMM_WORLD, err)
+               call mpi_reduce(a_comm_i,    a, 3*N, MPI_REAL_XP, MPI_SUM,          i, MPI_COMM_WORLD, err)
+
+               ! Receive interaction in np-i-1
+               call mpi_reduce(a_comm_np_i, a, 3*N, MPI_REAL_XP, MPI_SUM, nprocs-i-1, MPI_COMM_WORLD, err)
+
                if (debug) call mpi_barrier(MPI_COMM_WORLD, err)
 
                if (rank == 0) then
@@ -253,10 +267,11 @@ contains
                if (rank == i) then
                   if (debug) print*, 'R:', i, '(2/2) sends to:', nprocs-i-1
                   call mpi_send(a_right, 3*N, MPI_REAL_XP, nprocs-i-1, 0, MPI_COMM_WORLD, err)
+                  
                else if (rank == nprocs-i-1) then
                   if (debug) print*, 'R:', rank, '(2/2) gets from:', i
-                  call mpi_recv(a_comm, 3*N, MPI_REAL_XP, i, 0, MPI_COMM_WORLD, stat, err)
-                  a = a + a_comm
+                  call mpi_recv(a_comm_i, 3*N, MPI_REAL_XP, i, 0, MPI_COMM_WORLD, stat, err)
+                  a = a + a_comm_i
                end if
                if (debug) call mpi_barrier(MPI_COMM_WORLD, err)
             end do
@@ -265,7 +280,8 @@ contains
                print*, 'Exchanged'
                print*, ''
             end if
-            deallocate(a_comm)
+            deallocate(a_comm_i)
+            deallocate(a_comm_np_i)
             deallocate(a_right)
             deallocate(r_i)
             deallocate(r_np_i)
