@@ -164,17 +164,21 @@ contains
             a = a_reduced
             deallocate(a_reduced)
          case(1)
+            !--------------------------------
+            ! Allocate and initialize
+            !--------------------------------
             allocate(a_comm(3, N))
             allocate(a_right(3, N))
             allocate(r_i(3, N))
             allocate(r_np_i(3, N))
             allocate(r_right(3, N))
 
+            a_comm = 0._xp
+
             !--------------------------------
             ! Scatter positions across all processes
             ! and compute interactions
             !--------------------------------
-            a = 0._xp
             if (nprocs == 1) then
                stop 'E: you are trying to parallelize a task that requires 2 or more threads'
             else if (mod(nprocs, 2) /= 0) then
@@ -182,6 +186,7 @@ contains
             end if
 
             do i = 0, nprocs / 2 - 1
+               a_comm = 0._xp
                ! Get data from nprocs-i in i
                ! Note: use nprocs-i, because nprocs start at 0
 
@@ -216,19 +221,17 @@ contains
                call mpi_bcast(r_np_i, 3*N, MPI_REAL_XP, nprocs-i-1, MPI_COMM_WORLD, err)
                if (debug) call mpi_barrier(MPI_COMM_WORLD, err)
 
-               ! If i == rank, compute both diagonals
+               ! compute own interactions
                if (rank == i) then
                   r_right = r_i
-                  call compute_force_diag(m, r, 1, N, N, a)
+                  call compute_force_diag(m, r, 1, N, N, a_comm)
                   call compute_force_diag(m, r_right, 1, N, N, a_right)
-                  a_comm = a
+                  a = a + a_comm
 
-                  ! compute on right side but communicate nothing
+                  ! compute interaction on right side
                else if (rank < i) then
                   call compute_force(m, r_np_i, 1, N, r_right, 1, N, a_right)
-                  a_comm = 0._xp
-
-                  ! compute on left side and communicate interaction
+                  ! compute interaction on left side
                else
                   call compute_force(m, r, 1, N, r_i, 1, N, a_comm)
                   a = a - a_comm
