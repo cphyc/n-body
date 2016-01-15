@@ -119,11 +119,11 @@ program n_body
       t = t + dt
       iter = iter + 1
 
+      call compute_energy_wrap(N, m, r, v, Ec, Ep, E)
+
       if (mod(iter, dump_freq) == 0 .and. rank == MASTER) then
 
          print *, 'Dump', iter, t
-
-         call compute_energy_wrap(m, r, v, Ec, Ep, E)
 
          call write_dump(una, un, iter, Ec, Ep, E, t, r, v)
 

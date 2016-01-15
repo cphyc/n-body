@@ -244,7 +244,7 @@ contains
                if (debug) call mpi_barrier(MPI_COMM_WORLD, err)
 
                if (rank == 0) then
-                  if (debug) print*,
+                  if (debug) print*, ''
                end if
             end do
 
@@ -268,7 +268,7 @@ contains
             if (debug) call mpi_barrier(MPI_COMM_WORLD, err)
             if (rank == 0 .and. debug) then
                print*, 'Exchanged'
-               print*,
+               print*, ''
             end if
             deallocate(a_comm)
             deallocate(a_right)
@@ -358,9 +358,10 @@ contains
 
    end subroutine compute_energy_diag
 
-   subroutine compute_energy_wrap(m, r, v, Ec, Ep, E)
+   subroutine compute_energy_wrap(N, m, r, v, Ec, Ep, E)
       implicit none
 
+      integer,       intent(in) :: N
       real(kind=xp), intent(in) :: m(:)
       real(kind=xp), intent(in) :: r(:,:), v(:,:)
 
