@@ -228,15 +228,9 @@ contains
       integer         :: istart, iend, istart2, iend2
 !      integer         :: jstart, jend
 
-      allocate(a_comm(3, N))
-      allocate(a_right(3, N))
-      allocate(a_reduced(3, npoints))
-      allocate(r_i(3, N))
-      allocate(r_np_i(3, N))
-      allocate(r_right(3, N))
-
       select case(flag_compute_mpi)
          case(0)
+            allocate(a_reduced(3, npoints))
             !--------------------------------
             ! Get the domain for integration from the number of nodes
             !--------------------------------
@@ -246,13 +240,13 @@ contains
             iend2   = iend*2
             select case (flag_compute_force)
                case(0)
-                  call compute_force(m, r, istart2, iend2, r, istart2, iend2, a)          ! Compute a(t+dt) with sequential version
+                  call compute_force(m, r, istart2, iend2, r, istart2, iend2, a)         ! Compute a(t+dt) with sequential version
                case(1)
-                  call compute_force_diag(m, r, istart, iend, npoints, a) ! Compute a(t+dt) with fast OpenMP version
+                  call compute_force_diag(m, r, istart, iend, npoints, a)                ! Compute a(t+dt) with fast OpenMP version
                case(2)
-                  call compute_force_omp(m, r, istart2, iend2, r, istart2, iend2, a)      ! Compute a(t+dt) with naive OpenMP version
+                  call compute_force_omp(m, r, istart2, iend2, r, istart2, iend2, a)     ! Compute a(t+dt) with naive OpenMP version
                case(3)
-                  call compute_force_omp_diag(m, r, istart, iend, npoints, a) ! Compute a(t+dt) with fast OpenMP version
+                  call compute_force_omp_diag(m, r, istart, iend, npoints, a)            ! Compute a(t+dt) with fast OpenMP version
                case default
                   stop "Unknown value of flag_compute_force"
             end select
@@ -261,7 +255,14 @@ contains
             !--------------------------------
             call mpi_allreduce(a, a_reduced, npoints*3, MPI_REAL_XP, MPI_SUM, MPI_COMM_WORLD, err)
             a = a_reduced
+            deallocate(a_reduced)
          case(1)
+            allocate(a_comm(3, N))
+            allocate(a_right(3, N))
+            allocate(r_i(3, N))
+            allocate(r_np_i(3, N))
+            allocate(r_right(3, N))
+
             !--------------------------------
             ! Scatter positions across all processes
             ! and compute interactions
@@ -320,17 +321,14 @@ contains
                   end if
                end if
             end do
-
+            deallocate(a_comm)
+            deallocate(a_right)
+            deallocate(r_i)
+            deallocate(r_np_i)
+            deallocate(r_right)
          case default
             stop "Unknown value of flag_compute_mpi"
       end select
-
-      deallocate(a_comm)
-      deallocate(a_right)
-      deallocate(a_reduced)
-      deallocate(r_i)
-      deallocate(r_np_i)
-      deallocate(r_right)
 
    end subroutine compute_force_wrap
 
