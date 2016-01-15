@@ -271,7 +271,8 @@ contains
             do i = 1, nprocs / 2
                ! Get data from nprocs-i in i
                ! FIXME send r from right to left
-               call mpi_sendrecv(r, 3*N, MPI_REAL_XP, nprocs-i+1, 0, &
+               ! Note: use nprocs-i, because nprocs start at 0
+               call mpi_sendrecv(r, 3*N, MPI_REAL_XP, nprocs-i, 0, &
                     r_right, 3*N, MPI_REAL_XP, i, 0, &
                     MPI_COMM_WORLD, stat, err)
 
@@ -314,7 +315,7 @@ contains
             do i = 1, nprocs / 2
                if (rank == i .or. rank == nprocs - i + 1) then
                   call mpi_sendrecv(a_right, 3*N, MPI_REAL_XP, i, 0, &
-                       a_comm, 3*N, MPI_REAL_XP, nprocs - i + 1, 0, &
+                       a_comm, 3*N, MPI_REAL_XP, nprocs - i, 0, &
                        MPI_COMM_WORLD, stat, err)
                   if (rank == nprocs - i) then
                      a = a + a_comm
