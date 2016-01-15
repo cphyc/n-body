@@ -16,7 +16,7 @@ module constants
 
    real(kind = xp), parameter :: dt = 1.e-3_xp             ! Timestep
    real(kind = xp), parameter :: maxtime = npoints/128._xp ! Maximum time (ad hoc)
-   integer,         parameter :: maxiter = maxtime/dt      ! Number of iteration
+   integer,         parameter :: maxiter = nint(maxtime/dt) ! Number of iteration
 
    integer,         parameter :: dump_freq = 10            ! Frequency at which the system is sampled
    integer,         parameter :: flag_compute_force = 3    ! Choose force computation subroutine, 0=sequential, 1=omp, 2=omp_nn_1
