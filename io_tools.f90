@@ -8,17 +8,23 @@ module io_tools
    public :: read_mpos, write_dump, write_dump_headers
 contains
 
-   subroutine read_mpos(u, m, r)
+   subroutine read_mpos(u, start, end, m, r)
       implicit none
 
-      integer, intent(in) :: u
+      integer, intent(in) :: u, start, end
 
       real(kind = xp), intent(out) :: m(:)
       real(kind = xp), intent(out) :: r(:,:)
 
       integer :: i
 
-      do i = 1, npoints
+      ! Read until start - 1
+      do i = 1, start - 1
+         read (u, *)
+      end do
+
+      ! Read end-start
+      do i = 1, end - start
          read (u, *) r(1, i), r(2, i), r(3, i), m(i)
       end do
 
