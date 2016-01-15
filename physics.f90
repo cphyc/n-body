@@ -240,11 +240,11 @@ contains
             iend2   = iend*2
             select case (flag_compute_force)
                case(0)
-                  call compute_force(m, r, istart2, iend2, r, istart2, iend2, a)         ! Compute a(t+dt) with sequential version
+                  call compute_force(m, r, istart2, iend2, r, 1, npoints, a)         ! Compute a(t+dt) with sequential version
                case(1)
                   call compute_force_diag(m, r, istart, iend, npoints, a)                ! Compute a(t+dt) with fast OpenMP version
                case(2)
-                  call compute_force_omp(m, r, istart2, iend2, r, istart2, iend2, a)     ! Compute a(t+dt) with naive OpenMP version
+                  call compute_force_omp(m, r, istart2, iend2, r, 1, npoints, a)     ! Compute a(t+dt) with naive OpenMP version
                case(3)
                   call compute_force_omp_diag(m, r, istart, iend, npoints, a)            ! Compute a(t+dt) with fast OpenMP version
                case default
