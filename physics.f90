@@ -268,6 +268,12 @@ contains
             ! and compute interactions
             !--------------------------------
             a = 0._xp
+            if (nprocs == 1) then
+               print*, 'W: you are trying to parallelize a task that requires 2 or more threads'
+            else if (mod(nprocs, 2) /= 0) then
+               print*, 'W: you are trying to parallelize a task that runs better with an even number of threads'
+            end if
+
             do i = 1, nprocs / 2
                ! Get data from nprocs-i in i
                ! FIXME send r from right to left
