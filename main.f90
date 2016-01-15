@@ -108,12 +108,12 @@ program n_body
    !---------------------------------------------
    do while (iter < maxiter)
 
-      call integrate(v, a, dt/2)  ! Compute v(t+dt/2)
-      call integrate(r, v, dt)    ! Compute r(t+dt)
+      call integrate(v, a, dt/2)                        ! Compute v(t+dt/2)
+      call integrate(r, v, dt)                          ! Compute r(t+dt)
 
-      call compute_force_wrap(N, rank, nprocs, m, r, a)
+      call compute_force_wrap(N, rank, nprocs, m, r, a) ! Compute a(t+dt)
 
-      call integrate(v, a, dt/2)  ! Compute v(t+dt)
+      call integrate(v, a, dt/2)                        ! Compute v(t+dt)
 
       t = t + dt
       iter = iter + 1
