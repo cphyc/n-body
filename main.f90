@@ -201,7 +201,7 @@ program n_body
             case(1)
                call compute_energy_omp(m, r, v, Ec, Ep, E)      ! Compute Ec, Ep, E at t+dt with naive OpenMP version
             case(2)
-               call compute_energy_omp_nn_1(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt with fast OpenMP version
+               call compute_energy_omp_diag(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt with fast OpenMP version
             case default
                stop "Unknown value of flag_compute_energy"
          end select

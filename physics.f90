@@ -7,7 +7,7 @@ private
 
 public :: initial_speeds, integrate, integrate_omp, &
           compute_force, compute_force_omp, compute_force_omp_diag, &
-          compute_energy, compute_energy_omp, compute_energy_omp_nn_1
+          compute_energy, compute_energy_omp, compute_energy_omp_diag
 
 contains
 
@@ -222,7 +222,7 @@ contains
 
    end subroutine compute_energy_omp
 
-   subroutine compute_energy_omp_nn_1 (m, r, v, Ec, Ep, E)
+   subroutine compute_energy_omp_diag (m, r, v, Ec, Ep, E)
      implicit none
 
      real(kind=xp), intent(in) :: m(:)
@@ -262,6 +262,6 @@ contains
 
      E = Ec + Ep
 
-   end subroutine compute_energy_omp_nn_1
+   end subroutine compute_energy_omp_diag
 
 end module physics
