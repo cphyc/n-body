@@ -176,18 +176,19 @@ contains
             !--------------------------------
             a = 0._xp
             if (nprocs == 1) then
-               print*, 'W: you are trying to parallelize a task that requires 2 or more threads'
+               stop 'E: you are trying to parallelize a task that requires 2 or more threads'
             else if (mod(nprocs, 2) /= 0) then
                print*, 'W: you are trying to parallelize a task that runs better with an even number of threads'
             end if
 
-            do i = 1, nprocs / 2
+            do i = 0, nprocs / 2 - 1
                ! Get data from nprocs-i in i
-               ! FIXME send r from right to left
                ! Note: use nprocs-i, because nprocs start at 0
-               call mpi_sendrecv(r, 3*N, MPI_REAL_XP, nprocs-i, 0, &
-                    r_right, 3*N, MPI_REAL_XP, i, 0, &
-                    MPI_COMM_WORLD, stat, err)
+               if (rank == nprocs-i-1) then
+                  call mpi_send(r, 3*N, MPI_REAL_XP, i, 0, MPI_COMM_WORLD, err)
+               else if (rank == i) then
+                  call mpi_recv(r_right, 3*N, MPI_REAL_XP, nprocs-i-1, 0, MPI_COMM_WORLD, stat, err)
+               end if
 
                if (rank == i) then
                   r_i = r
@@ -198,7 +199,7 @@ contains
                ! Broadcast i-th data
                call mpi_bcast(r_i, 3*N, MPI_REAL_XP, i, MPI_COMM_WORLD, err)
                ! Broadcast n-i-th data
-               call mpi_bcast(r_np_i, 3*N, MPI_REAL_XP, nprocs - i, MPI_COMM_WORLD, err)
+               call mpi_bcast(r_np_i, 3*N, MPI_REAL_XP, nprocs-i-1, MPI_COMM_WORLD, err)
 
                ! If i == rank, compute both diagonals
                if (rank == i) then
@@ -225,14 +226,12 @@ contains
             !--------------------------------
             ! Gather missing data
             !--------------------------------
-            do i = 1, nprocs / 2
-               if (rank == i .or. rank == nprocs - i + 1) then
-                  call mpi_sendrecv(a_right, 3*N, MPI_REAL_XP, i, 0, &
-                       a_comm, 3*N, MPI_REAL_XP, nprocs - i, 0, &
-                       MPI_COMM_WORLD, stat, err)
-                  if (rank == nprocs - i) then
-                     a = a + a_comm
-                  end if
+            do i = 0, nprocs / 2 - 1
+               if (rank == i) then
+                  call mpi_send(a_right, 3*N, MPI_REAL_XP, nprocs-i-1, 0, MPI_COMM_WORLD, err)
+               else if (rank == nprocs-i-1) then
+                  call mpi_recv(a_comm, 3*N, MPI_REAL_XP, i, 0, MPI_COMM_WORLD, stat, err)
+                  a = a + a_comm
                end if
             end do
             deallocate(a_comm)
