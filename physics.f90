@@ -56,12 +56,11 @@ contains
 
          do j = jstart, jend
 
-            if (i /= j) then
-               vec = r1(:, i) - r2(:, j)
-               tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
+            ! When i = j, this is zero if r1=r2, but important otherwise
+            vec = r1(:, i) - r2(:, j)
+            tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
 
-               a(:, i) = a(:, i) - tmp*m(j)*vec
-            end if
+            a(:, i) = a(:, i) - tmp*m(j)*vec
 
          end do
 
@@ -177,14 +176,8 @@ contains
             ! Scatter positions across all processes
             ! and compute interactions
             !--------------------------------
-            if (nprocs == 1) then
-               stop 'E: you are trying to parallelize a task that requires 2 or more threads'
-            else if (mod(nprocs, 2) /= 0) then
-               print*, 'W: you are trying to parallelize a task that runs better with an even number of threads'
-            end if
 
             do i = 0, nprocs / 2 - 1
-               a_comm = 0._xp
                ! Get data from nprocs-i in i
                ! Note: use nprocs-i, because nprocs start at 0
 
@@ -201,7 +194,7 @@ contains
 
                if (rank == i) then
                   r_i = r
-               else if (rank == nprocs - i) then
+               else if (rank == nprocs - i - 1) then
                   r_np_i = r
                end if
 
@@ -220,8 +213,8 @@ contains
                if (debug) call mpi_barrier(MPI_COMM_WORLD, err)
 
                ! compute own interactions
+               a_comm = 0._xp
                if (rank == i) then
-                  r_right = r_i
                   a_right = 0._xp
                   call compute_force_diag(m, r, 1, N, N, a)
                   call compute_force_diag(m, r_right, 1, N, N, a_right)
@@ -233,7 +226,7 @@ contains
                   ! compute interaction on left side
                else
                   call compute_force(m, r_i, 1, N, r, 1, N, a_comm)
-                  a = a - a_comm
+                  a = a - a_comm ! FIXME: False with different masses
                end if
 
                if (rank == i) then
@@ -304,6 +297,7 @@ contains
 
          do j = 1, npoints
 
+            ! TODO: Check this condition when using mpi_flag=1 and distributed energy computation  
             if (i /= j) then
                Ep = Ep - 0.5_xp * G * m(j) * m(i) / sqrt(norm2(r(:, i) - r(:, j))**2 + epsilon2)
             end if
