@@ -387,8 +387,8 @@ contains
             allocate(v_gathered(3, npoints))
          end if
 
-         call mpi_gather(r, 3*N, MPI_REAL_XP, r_gathered, 3*npoints, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)
-         call mpi_gather(v, 3*N, MPI_REAL_XP, v_gathered, 3*npoints, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)
+         call mpi_gather(r, 3*N, MPI_REAL_XP, r_gathered, 3*N, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)
+         call mpi_gather(v, 3*N, MPI_REAL_XP, v_gathered, 3*N, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)
 
          if (rank == MASTER) then
 
