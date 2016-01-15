@@ -73,11 +73,11 @@ program n_body
    select case (flag_mpi)
       case(0)
          open(newunit=un, file='initial_conditions.dat', status="old")
-         call read_mpos(un, 1, npoints, m, r)
+         call read_init(un, 1, npoints, m, r, v)
          close(un)
       case(1)
          open(newunit=un, file='initial_conditions.dat', status="old")
-         call read_mpos(un, rank*N + 1, (rank+1)*N + 1, m, r)
+         call read_init(un, rank*N + 1, (rank+1)*N + 1, m, r, v)
          close(un)
       case default
          stop "Unknown value of flag_mpi"
@@ -107,9 +107,8 @@ program n_body
    end if
 
    !---------------------------------------------
-   ! Compute initial speeds, energy and accelerations
+   ! Compute initial energy and accelerations
    !---------------------------------------------
-   call initial_speeds(r, v)
    call compute_force_wrap(N, rank, nprocs, m, r, a)
    call compute_energy_wrap(N, rank, nprocs, m, r, v, Ec, Ep)
 

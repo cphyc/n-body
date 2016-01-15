@@ -1,27 +1,15 @@
 module physics
-use constants
+   use constants
 
-use mpi
+   use mpi
 
-implicit none
+   implicit none
 
-private
+   private
 
-public :: initial_speeds, integrate, compute_force_wrap, compute_energy_wrap
+   public :: integrate, compute_force_wrap, compute_energy_wrap
 
 contains
-
-   subroutine initial_speeds (r, v)
-      implicit none
-
-      real(xp), intent(in)  :: r(:,:)
-      real(xp), intent(out) :: v(:,:)
-
-      v(1, :) =   r(2, :)
-      v(2, :) = - r(1, :)
-      v(3, :) = 0._xp
-
-   end subroutine initial_speeds
 
    subroutine integrate(f, df, dt)
       implicit none

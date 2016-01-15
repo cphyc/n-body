@@ -2,11 +2,15 @@ program gen
 
    use constants
 
+   implicit none
+
    integer  :: ios     ! I/O test variable
    integer  :: i       ! Points iteration variable
 
    real(xp) :: x, y, z
+   real(xp) :: vx, vy, vz
    real(xp) :: radius
+   real(xp) :: omega
    real(xp) :: mass
 
    mass = 1._xp / npoints
@@ -29,7 +33,12 @@ program gen
          radius = x**2 + y**2 + z**2
       end do
 
-      write(un, '(4(e16.8e2))') x, y, z, mass
+      omega = 1._xp
+      vx =   omega * y
+      vy = - omega * x
+      vz = 0._xp
+
+      write(un, '(4(e16.8e2))') x, y, z, mass, vx, vy, vz
 
    end do
 

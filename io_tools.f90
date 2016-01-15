@@ -5,16 +5,18 @@ module io_tools
 
    private
 
-   public :: read_mpos, write_dump, write_dump_headers
+   public :: read_init, write_dump, write_dump_headers
+
 contains
 
-   subroutine read_mpos(u, start, end, m, r)
+   subroutine read_init(u, start, end, m, r, v)
       implicit none
 
       integer, intent(in) :: u, start, end
 
       real(xp), intent(out) :: m(:)
       real(xp), intent(out) :: r(:,:)
+      real(xp), intent(out) :: v(:,:)
 
       integer :: i
 
@@ -25,10 +27,10 @@ contains
 
       ! Read end-start
       do i = 1, end - start
-         read (u, *) r(1, i), r(2, i), r(3, i), m(i)
+         read (u, *) r(1, i), r(2, i), r(3, i), m(i), v(1, i), v(2, i), v(3, i)
       end do
 
-   end subroutine read_mpos
+   end subroutine read_init
 
    subroutine write_dump_headers (u, ua)
       implicit none
