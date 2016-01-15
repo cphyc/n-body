@@ -136,7 +136,7 @@ contains
 
       integer :: istart, iend
 
-      logical :: debug = .false.
+      logical :: debug = .true.
 !      integer :: jstart, jend
 
       a = 0._xp
@@ -241,11 +241,17 @@ contains
                if (rank == i) then
                   if (debug) print*, 'R:', rank, 'getting reduce'
                else
-                  if (debug) print*, 'R:', rank, 'sending reduce'
+                  if (debug) print*, 'R:', rank, 'sending reduce to', i
                end if
 
                ! Receive interaction in i
                call mpi_reduce(a_comm_i,    a, 3*N, MPI_REAL_XP, MPI_SUM,          i, MPI_COMM_WORLD, err)
+
+               if (rank == nprocs-i-1) then
+                  if (debug) print*, 'R:', rank, 'getting reduce'
+               else
+                  if (debug) print*, 'R:', rank, 'sending reduce to', nprocs-i-1
+               end if
 
                ! Receive interaction in np-i-1
                call mpi_reduce(a_comm_np_i, a, 3*N, MPI_REAL_XP, MPI_SUM, nprocs-i-1, MPI_COMM_WORLD, err)
