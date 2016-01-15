@@ -118,13 +118,15 @@ program n_body
       t = t + dt
       iter = iter + 1
 
-      call compute_energy_wrap(N, rank, nprocs, m, r, v, Ec, Ep, E)
 
-      if (mod(iter, dump_freq) == 0 .and. rank == MASTER) then
+      if (mod(iter, dump_freq) == 0) then
 
-         print *, 'Dump', iter, t
+         call compute_energy_wrap(N, rank, nprocs, m, r, v, Ec, Ep, E)
 
-         call write_dump(una, un, iter, Ec, Ep, E, t, r, v)
+         if (rank == MASTER) then
+            print *, 'Dump', iter, t
+            call write_dump(una, un, iter, Ec, Ep, E, t, r, v)
+         end if
 
       end if
 
