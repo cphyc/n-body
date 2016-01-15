@@ -132,7 +132,7 @@ contains
 
       integer :: err = 0
       integer :: stat(MPI_STATUS_SIZE)
-      integer :: i                          ! Counter for elements
+      integer :: i, np_i               ! Counters for elements
 
       integer :: istart, iend
 
@@ -179,56 +179,57 @@ contains
 
             do i = 0, nprocs / 2 - 1
                ! Get data from nprocs-i in i
-               ! Note: use nprocs-i, because nprocs start at 0
+               ! Note: use nprocs-i-1, because nprocs start at 0
+               np_i = nprocs - i - 1
 
-               if (rank == nprocs-i-1) then
-                  call mpi_send(r, 3*N, MPI_REAL_XP, i, 0, MPI_COMM_WORLD, err)
+               if (rank == np_i) then
+                  call mpi_send(r,       3*N, MPI_REAL_XP,    i, 0, MPI_COMM_WORLD, err)
                else if (rank == i) then
-                  call mpi_recv(r_right, 3*N, MPI_REAL_XP, nprocs-i-1, 0, MPI_COMM_WORLD, stat, err)
+                  call mpi_recv(r_right, 3*N, MPI_REAL_XP, np_i, 0, MPI_COMM_WORLD, stat, err)
                end if
 
                if (rank == i) then
                   r_i = r
-               else if (rank == nprocs - i - 1) then
+               else if (rank == np_i) then
                   r_np_i = r
                end if
 
                ! Broadcast i-th data
-               call mpi_bcast(r_i, 3*N, MPI_REAL_XP, i, MPI_COMM_WORLD, err)
+               call mpi_bcast(r_i,    3*N, MPI_REAL_XP,    i, MPI_COMM_WORLD, err)
 
                ! Broadcast n-i-th data
-               call mpi_bcast(r_np_i, 3*N, MPI_REAL_XP, nprocs-i-1, MPI_COMM_WORLD, err)
+               call mpi_bcast(r_np_i, 3*N, MPI_REAL_XP, np_i, MPI_COMM_WORLD, err)
 
                ! compute own interactions
                a_comm_i = 0._xp
                a_comm_np_i = 0._xp
                if (rank == i) then
                   a_right = 0._xp
-                  call compute_force_diag(m, r, 1, N, N, a)
-                  call compute_force_diag(m, r_right, 1, N, N, a_right)
+                  call compute_force_diag(m, r,       1, N/2, N, a)
+                  call compute_force_diag(m, r_right, 1, N/2, N, a_right)
                   a_comm_i = a
 
                   ! compute interaction on right side
                else if (rank < i) then
                   call compute_force(m, r_np_i, 1, N, r_right, 1, N, a_comm_np_i)
-                  a_right = a_right - a_comm_np_i
+                  a_right = a_right - a_comm_np_i ! FIXME: False with different masses
 
                   ! compute interaction on left side
                else
-                  call compute_force(m, r_i, 1, N, r, 1, N, a_comm_i)
+                  call compute_force(m, r_i,    1, N, r,       1, N, a_comm_i)
                   a = a - a_comm_i ! FIXME: False with different masses
 
-                  if (rank == nprocs - i - 1) then
+                  if (rank == np_i) then
                      a_comm_np_i = a
                   end if
 
                end if
 
                ! Receive interaction in i
-               call mpi_reduce(a_comm_i,    a, 3*N, MPI_REAL_XP, MPI_SUM,          i, MPI_COMM_WORLD, err)
+               call mpi_reduce(a_comm_i,    a, 3*N, MPI_REAL_XP, MPI_SUM,    i, MPI_COMM_WORLD, err)
 
                ! Receive interaction in np-i-1
-               call mpi_reduce(a_comm_np_i, a, 3*N, MPI_REAL_XP, MPI_SUM, nprocs-i-1, MPI_COMM_WORLD, err)
+               call mpi_reduce(a_comm_np_i, a, 3*N, MPI_REAL_XP, MPI_SUM, np_i, MPI_COMM_WORLD, err)
 
             end do
 
@@ -236,19 +237,22 @@ contains
             ! Gather missing data
             !--------------------------------
             do i = 0, nprocs / 2 - 1
+               np_i = nprocs - i - 1
                if (rank == i) then
-                  call mpi_send(a_right, 3*N, MPI_REAL_XP, nprocs-i-1, 0, MPI_COMM_WORLD, err)
-               else if (rank == nprocs-i-1) then
-                  call mpi_recv(a_comm_i, 3*N, MPI_REAL_XP, i, 0, MPI_COMM_WORLD, stat, err)
-                  a = a + a_comm_i
+                  call mpi_send(a_right,     3*N, MPI_REAL_XP, np_i, 0, MPI_COMM_WORLD, err)
+               else if (rank == np_i) then
+                  call mpi_recv(a_comm_np_i, 3*N, MPI_REAL_XP,    i, 0, MPI_COMM_WORLD, stat, err)
+                  a = a + a_comm_np_i
                end if
             end do
+
             deallocate(a_comm_i)
             deallocate(a_comm_np_i)
             deallocate(a_right)
             deallocate(r_i)
             deallocate(r_np_i)
             deallocate(r_right)
+
          case default
             stop "Unknown value of flag_mpi"
       end select
