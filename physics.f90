@@ -6,8 +6,8 @@ implicit none
 private
 
 public :: initial_speeds, integrate, integrate_omp, &
-          compute_force, compute_force_omp, compute_force_omp_nn_1, &
-          compute_energy, compute_energy_omp, compute_energy_omp_nn_1
+          compute_force, compute_force_diag, compute_force_omp, compute_force_omp_diag, &
+          compute_energy, compute_energy_omp, compute_energy_omp_diag
 
 contains
 
@@ -47,23 +47,55 @@ contains
 
    end subroutine integrate_omp
 
-   subroutine compute_force (m, r, istart, iend, a)
+   subroutine compute_force (m, r1, istart, iend, r2, jstart, jend, a)
       implicit none
 
       real(kind=xp), intent(in) :: m(:)
-      real(kind=xp), intent(in) :: r(:,:)
-      integer,       intent(in) :: istart, iend
+      real(kind=xp), intent(in) :: r1(:,:), r2(:,:)
+      integer,       intent(in) :: istart, iend, jstart, jend
 
       real(kind=xp), intent(out) :: a(:,:)
 
-      real(kind=xp), dimension(3) :: vec, tmp
+      real(kind=xp) :: vec(3), tmp(3)
       integer :: i, j
 
       a = 0._xp
 
       do i = istart, iend
 
-         do j = i+1, npoints
+         do j = jstart, jend
+
+            if (i /= j) then
+               vec = r1(:, i) - r2(:, j)
+               tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
+
+               a(:, i) = a(:, i) - tmp*m(j)*vec
+            end if
+
+         end do
+
+      end do
+
+   end subroutine compute_force
+
+   subroutine compute_force_diag (m, r, istart, iend, length, a)
+      implicit none
+
+      real(kind=xp), intent(in) :: m(:)
+      real(kind=xp), intent(in) :: r(:,:)
+      integer,       intent(in) :: istart, iend
+      integer,       intent(in) :: length
+
+      real(kind=xp), intent(out) :: a(:,:)
+
+      real(kind=xp) :: vec(3), tmp(3)
+      integer :: i, j, k
+
+      a = 0._xp
+
+      do i = istart, iend
+
+         do j = 1, i-1
 
             vec = r(:, i) - r(:, j)
             tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
@@ -73,32 +105,45 @@ contains
 
          end do
 
+         k = length + 1 - i
+
+         do j = 1, k-1
+
+            vec = r(:, k) - r(:, j)
+            tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
+
+            a(:, k) = a(:, k) - tmp*m(j)*vec
+            a(:, j) = a(:, j) + tmp*m(k)*vec
+
+         end do
+
       end do
 
-   end subroutine compute_force
+   end subroutine compute_force_diag
 
-   subroutine compute_force_omp (m, r, istart, iend, a)
+   subroutine compute_force_omp (m, r1, istart, iend, r2, jstart, jend, a)
       implicit none
 
       real(kind=xp), intent(in) :: m(:)
-      real(kind=xp), intent(in) :: r(:, :)
-      integer,       intent(in) :: istart, iend
+      real(kind=xp), intent(in) :: r1(:, :), r2(:, :)
+      integer,       intent(in) :: istart, iend, jstart, jend
 
       real(kind=xp), intent(out) :: a(:, :)
 
-      real(kind=xp), dimension(3) :: vec, tmp
+      real(kind=xp) :: vec(3), tmp(3)
       integer :: i, j
 
       a = 0._xp
 
+      ! No REDUCTION(+:a) because only one thread is modifying a(:,i)
       !$OMP PARALLEL PRIVATE(j, vec, tmp)
       !$OMP DO SCHEDULE(RUNTIME)
       do i = istart, iend
 
-         do j = 1, npoints
+         do j = jstart, jend
 
             if (i /= j) then
-               vec = r(:, i) - r(:, j)
+               vec = r1(:, i) - r2(:, j)
                tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
 
                a(:, i) = a(:, i) - tmp*m(j)*vec
@@ -112,16 +157,17 @@ contains
 
    end subroutine compute_force_omp
 
-   subroutine compute_force_omp_nn_1 (m, r, istart, iend, a)
+   subroutine compute_force_omp_diag (m, r, istart, iend, length, a)
       implicit none
 
       real(kind=xp), intent(in) :: m(:)
       real(kind=xp), intent(in) :: r(:,:)
       integer,       intent(in) :: istart, iend
+      integer,       intent(in) :: length
 
       real(kind=xp), intent(out) :: a(:,:)
 
-      real(kind=xp), dimension(3) :: vec, tmp
+      real(kind=xp) :: vec(3), tmp(3)
       integer :: i, j, k
 
       a = 0._xp
@@ -140,7 +186,7 @@ contains
 
          end do
 
-         k = npoints + 1 - i
+         k = length + 1 - i
 
          do j = 1, k-1
 
@@ -156,7 +202,7 @@ contains
       !$OMP END DO
       !$OMP END PARALLEL
 
-   end subroutine compute_force_omp_nn_1
+   end subroutine compute_force_omp_diag
 
    subroutine compute_energy (m, r, v, Ec, Ep, E)
       implicit none
@@ -222,7 +268,7 @@ contains
 
    end subroutine compute_energy_omp
 
-   subroutine compute_energy_omp_nn_1 (m, r, v, Ec, Ep, E)
+   subroutine compute_energy_omp_diag (m, r, v, Ec, Ep, E)
      implicit none
 
      real(kind=xp), intent(in) :: m(:)
@@ -262,6 +308,6 @@ contains
 
      E = Ec + Ep
 
-   end subroutine compute_energy_omp_nn_1
+   end subroutine compute_energy_omp_diag
 
 end module physics
