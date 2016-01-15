@@ -383,7 +383,7 @@ contains
          if (rank == MASTER) then
 
             if (flag_diag) then
-               call compute_energy_diag(m_gathered, r_gathered, v_gathered, 1, npoints, npoints, Ec, Ep) ! Compute Ec & Ep at t+dt with fast version
+               call compute_energy_diag(m_gathered, r_gathered, v_gathered, 1, npoints/2, npoints, Ec, Ep) ! Compute Ec & Ep at t+dt with fast version
             else
                ! TODO: This would be broken when computing using subdomains, because Ec must not be calculated elsewhere than the
                ! real diag
