@@ -21,7 +21,7 @@ module constants
    integer,         parameter :: dump_freq = 10            ! Frequency at which the system is sampled
    integer,         parameter :: flag_compute_force = 3    ! Choose force computation subroutine, 0=sequential, 1=omp, 2=omp_nn_1
    integer,         parameter :: flag_compute_energy = 2   ! Choose energy computation subroutine, 0=sequential, 1=omp, 2=omp_nn_1
-   integer,         parameter :: flag_compute_mpi = 0   ! Choose energy computation subroutine, 0=sequential, 1=omp, 2=omp_nn_1
+   integer,         parameter :: flag_compute_mpi = 0      ! Choose mpi logic 0=full copy or pos. arrays, 1=low mem. impact
 
    integer :: un, una ! Unit numbers for file operation
 
