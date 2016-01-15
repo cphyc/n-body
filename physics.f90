@@ -230,7 +230,7 @@ contains
 
       allocate(a_comm(3, N))
       allocate(a_right(3, N))
-      allocate(a_reduced(3, N))
+      allocate(a_reduced(3, N*2))
       allocate(r_i(3, N))
       allocate(r_np_i(3, N))
       allocate(r_right(3, N))
