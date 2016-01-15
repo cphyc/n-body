@@ -44,12 +44,10 @@ contains
       real(kind=xp), intent(in) :: r1(:, :), r2(:, :)
       integer,       intent(in) :: istart, iend, jstart, jend
 
-      real(kind=xp), intent(out) :: a(:, :)
+      real(kind=xp), intent(inout) :: a(:, :)
 
       real(kind=xp) :: vec(3), tmp(3)
       integer :: i, j
-
-      a = 0._xp
 
       ! No REDUCTION(+:a) because only one thread is modifying a(:,i)
       !$OMP PARALLEL PRIVATE(j, vec, tmp)
@@ -81,12 +79,10 @@ contains
       integer,       intent(in) :: istart, iend
       integer,       intent(in) :: length
 
-      real(kind=xp), intent(out) :: a(:,:)
+      real(kind=xp), intent(inout) :: a(:,:)
 
       real(kind=xp) :: vec(3), tmp(3)
       integer :: i, j, k
-
-      a = 0._xp
 
       !$OMP PARALLEL PRIVATE(j, k, vec, tmp) REDUCTION(+:a)
       !$OMP DO SCHEDULE(RUNTIME)
@@ -143,6 +139,8 @@ contains
 
       logical :: debug = .false.
 !      integer         :: jstart, jend
+
+      a = 0._xp
 
       select case(flag_mpi)
          case(0)
