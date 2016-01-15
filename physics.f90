@@ -367,11 +367,36 @@ contains
 
       real(kind=xp), intent(out) :: Ec, Ep, E
 
-      if (flag_diag) then
-         call compute_energy_diag(m, r, v, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt with fast OpenMP version
-      else
-         call compute_energy(m, r, v, Ec, Ep, E)      ! Compute Ec, Ep, E at t+dt with sequential version
+      real(xp), allocatable :: r_gathered(:, :), v_gathered(:, :)
+      integer :: err
+
+      if (rank == MASTER) then
+         allocate(r_gathered(3, npoints))
+         allocate(v_gathered(3, npoints))
       end if
+
+      select case(flag_mpi)
+      case(0)
+         if (rank == MASTER) then
+            r_gathered = r
+            v_gathered = v
+         end if
+      case(1) ! gather r and v on master node
+         call mpi_gather(r, 3*N, MPI_REAL_XP, r_gathered, 3*npoints, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)
+         call mpi_gather(v, 3*N, MPI_REAL_XP, v_gathered, 3*npoints, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)
+      end select
+
+      if (flag_diag) then
+         call compute_energy_diag(m, r_gathered, v_gathered, Ec, Ep, E) ! Compute Ec, Ep, E at t+dt with fast OpenMP version
+      else
+         call compute_energy(m, r_gathered, v_gathered, Ec, Ep, E)      ! Compute Ec, Ep, E at t+dt with sequential version
+      end if
+
+      if (rank == MASTER) then
+         deallocate(r_gathered)
+         deallocate(v_gathered)
+      end if
+
 
    end subroutine compute_energy_wrap
 

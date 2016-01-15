@@ -30,7 +30,7 @@ module constants
              pi, G, &
              npoints, epsilon2, dt, maxtime, maxiter, &
              dump_freq, flag_diag, flag_mpi, &
-             un, una
+             un, una, MASTER
 
 contains
 
