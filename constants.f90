@@ -19,15 +19,16 @@ module constants
    integer,         parameter :: maxiter = maxtime/dt      ! Number of iteration
 
    integer,         parameter :: dump_freq = 10            ! Frequency at which the system is sampled
-   integer,         parameter :: flag_compute_force = 2    ! Choose force computation subroutine, 0=sequential, 1=omp, 2=omp_nn_1
+   integer,         parameter :: flag_compute_force = 3    ! Choose force computation subroutine, 0=sequential, 1=omp, 2=omp_nn_1
    integer,         parameter :: flag_compute_energy = 2   ! Choose energy computation subroutine, 0=sequential, 1=omp, 2=omp_nn_1
+   integer,         parameter :: flag_compute_mpi = 0   ! Choose energy computation subroutine, 0=sequential, 1=omp, 2=omp_nn_1
 
    integer :: un, una ! Unit numbers for file operation
 
    public :: xp, MPI_REAL_XP, &
              pi, G, &
              npoints, epsilon2, dt, maxtime, maxiter, &
-             dump_freq, flag_compute_force, flag_compute_energy, &
+             dump_freq, flag_compute_force, flag_compute_energy, flag_compute_mpi, &
              un, una
 
 contains
