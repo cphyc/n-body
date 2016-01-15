@@ -141,7 +141,7 @@ contains
 
       integer         :: istart, iend
 
-      logical :: debug = .true.
+      logical :: debug = .false.
 !      integer         :: jstart, jend
 
       select case(flag_mpi)
