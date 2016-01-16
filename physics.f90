@@ -58,6 +58,40 @@ contains
 
    end subroutine compute_force
 
+   subroutine compute_force_mpi (m, r1, istart, iend, r2, jstart, jend, a1, a2)
+      implicit none
+
+      real(xp), intent(in) :: m(:)
+      real(xp), intent(in) :: r1(:, :), r2(:, :)
+      integer,  intent(in) :: istart, iend, jstart, jend
+
+      real(xp), intent(inout) :: a1(:, :), a2(:, :)
+
+      real(xp) :: vec(3), tmp(3)
+      integer  :: i, j
+
+      ! No REDUCTION(+:a) because only one thread is modifying a(:,i)
+      !$OMP PARALLEL PRIVATE(j, vec, tmp)
+      !$OMP DO SCHEDULE(RUNTIME)
+      do i = istart, iend
+
+         do j = jstart, jend
+
+            ! When i = j, this code returns zero if r1=r2, but is important otherwise
+            vec = r1(:, i) - r2(:, j)
+            tmp = vec * G / sqrt(sum(vec**2) + epsilon2)**3
+
+            a1(:, i) = a1(:, i) - m(j)*tmp
+            a2(:, j) = a2(:, j) + m(i)*tmp
+
+         end do
+
+      end do
+      !$OMP END DO
+      !$OMP END PARALLEL
+
+   end subroutine compute_force_mpi
+
    subroutine compute_force_diag (m, r, istart, iend, length, a)
       implicit none
 
@@ -199,13 +233,11 @@ contains
 
                   ! compute interaction on right side
                else if (rank < i) then
-                  call compute_force(m, r_np_i, 1, N, r_right, 1, N, a_comm_np_i)
-                  a_right = a_right - a_comm_np_i ! FIXME: False with different masses
+                  call compute_force_mpi(m, r_np_i, 1, N, r_right, 1, N, a_comm_np_i, a_right)
 
                   ! compute interaction on left side
                else
-                  call compute_force(m, r_i,    1, N, r,       1, N, a_comm_i)
-                  a = a - a_comm_i ! FIXME: False with different masses
+                  call compute_force_mpi(m, r_i,    1, N, r,       1, N, a_comm_i, a)
 
                   if (rank == np_i) then
                      a_comm_np_i = a
