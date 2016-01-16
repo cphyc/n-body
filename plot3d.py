@@ -11,6 +11,8 @@ import numpy as np
 parser = argparse.ArgumentParser(description='Plot data from output of the n-body simulation.')
 parser.add_argument('--output', type=str, default='output.dat',
                     help='The output file (default %(default)s)')
+parser.add_argument('--particles', type=int, default=1024,
+                    help='Number of particles to use (default %(default)s)')
 args = parser.parse_args()
 
 class AnimatedScatter(object):
@@ -52,6 +54,6 @@ class AnimatedScatter(object):
         self.ani.save('test.mp4', writer='ffmpeg', fps=10, bitrate=10000, dpi=180)
 
 if __name__ == '__main__':
-    a = AnimatedScatter(1024)
+    a = AnimatedScatter(args.particles)
     a.save()
 #    a.show()
