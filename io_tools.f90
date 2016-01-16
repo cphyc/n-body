@@ -26,7 +26,7 @@ contains
       end do
 
       ! Read end-start
-      do i = 1, end - start
+      do i = 1, end - start + 1
          read (u, *) r(1, i), r(2, i), r(3, i), m(i), v(1, i), v(2, i), v(3, i)
       end do
 
