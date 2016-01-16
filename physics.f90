@@ -393,7 +393,7 @@ contains
          !--------------------------------
          call mpi_reduce(Ec_loc, Ec, 1, MPI_REAL_XP, MPI_SUM, MASTER, MPI_COMM_WORLD, err)
          call mpi_reduce(Ep_loc, Ep, 1, MPI_REAL_XP, MPI_SUM, MASTER, MPI_COMM_WORLD, err)
-      case(1)
+      case(1, 2)
          ! gather r and v on master node
          if (rank == MASTER) then
             allocate(r_gathered(3, npoints))
