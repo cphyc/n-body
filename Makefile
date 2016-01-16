@@ -10,10 +10,10 @@ LFLAGS=-fopenmp
 MPIRUN=mpirun
 
 # Configuration for mpif90
-# GC=mpif90
-# CFLAGS=-warn all -std08 -02 -xHost -openmp
-# LFLAGS=-openmp
-# MPIRUN=mpirun
+#GC=mpif90
+#CFLAGS=-warn all -std08 -02 -xHost -openmp
+#LFLAGS=-openmp
+#MPIRUN=mpirun
 
 # Configuration for ifort
 #GC=ifort
