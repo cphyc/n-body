@@ -44,11 +44,11 @@ contains
 
          do j = jstart, jend
 
-            ! When i = j, this is zero if r1=r2, but important otherwise
+            ! When i = j, this code returns zero if r1=r2, but is important otherwise
             vec = r1(:, i) - r2(:, j)
-            tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
+            tmp = vec * G / sqrt(sum(vec**2) + epsilon2)**3
 
-            a(:, i) = a(:, i) - tmp*m(j)*vec
+            a(:, i) = a(:, i) - m(j)*tmp
 
          end do
 
@@ -78,10 +78,10 @@ contains
          do j = 1, i-1
 
             vec = r(:, i) - r(:, j)
-            tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
+            tmp = vec * G / sqrt(sum(vec**2) + epsilon2)**3
 
-            a(:, i) = a(:, i) - tmp*m(j)*vec
-            a(:, j) = a(:, j) + tmp*m(i)*vec
+            a(:, i) = a(:, i) - m(j)*tmp
+            a(:, j) = a(:, j) + m(i)*tmp
 
          end do
 
@@ -90,10 +90,10 @@ contains
          do j = 1, k-1
 
             vec = r(:, k) - r(:, j)
-            tmp = G / (norm2(vec)**2 + epsilon2)**1.5_xp
+            tmp = vec * G / sqrt(sum(vec**2) + epsilon2)**3
 
-            a(:, k) = a(:, k) - tmp*m(j)*vec
-            a(:, j) = a(:, j) + tmp*m(k)*vec
+            a(:, k) = a(:, k) - m(j)*tmp
+            a(:, j) = a(:, j) + m(k)*tmp
 
          end do
 
@@ -262,13 +262,13 @@ contains
       !$OMP DO SCHEDULE(RUNTIME)
       do i = istart, iend
 
-         Ec = Ec + 0.5_xp * m(i) * norm2(v(:,i))**2
+         Ec = Ec + 0.5_xp * m(i) * sum(v(:,i)**2)
 
          do j = 1, npoints
 
             ! TODO: Check this condition when using mpi_flag=1 and distributed energy computation  
             if (i /= j) then
-               Ep = Ep - 0.5_xp * G * m(j) * m(i) / sqrt(norm2(r(:, i) - r(:, j))**2 + epsilon2)
+               Ep = Ep - 0.5_xp * G * m(j) * m(i) / sqrt(sum((r(:, i) - r(:, j))**2) + epsilon2)
             end if
 
          end do
@@ -295,20 +295,20 @@ contains
       !$OMP DO SCHEDULE(RUNTIME)
       do i = istart, iend
 
-         Ec = Ec + 0.5_xp * m(i) * norm2(v(:,i))**2
+         Ec = Ec + 0.5_xp * m(i) * sum(v(:,i)**2)
 
          do j = 1, i-1
 
-            Ep = Ep -  G * m(j) * m(i) / sqrt(norm2(r(:, i) - r(:, j))**2 + epsilon2)
+            Ep = Ep - G * m(j) * m(i) / sqrt(sum((r(:, i) - r(:, j))**2) + epsilon2)
 
          end do
 
          k = length + 1 - i
-         Ec = Ec + 0.5_xp * m(k) * norm2(v(:,k))**2
+         Ec = Ec + 0.5_xp * m(k) * sum(v(:,k)**2)
 
          do j = 1, k-1
 
-            Ep = Ep -  G * m(j) * m(k) / sqrt(norm2(r(:, k) - r(:, j))**2 + epsilon2)
+            Ep = Ep - G * m(j) * m(k) / sqrt(sum((r(:, k) - r(:, j))**2) + epsilon2)
 
          end do
 
