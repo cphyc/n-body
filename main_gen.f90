@@ -38,7 +38,7 @@ program gen
       vy = - omega * x
       vz = 0._xp
 
-      write(un, '(4(e16.8e2))') x, y, z, mass, vx, vy, vz
+      write(un, '(7(e16.8e2))') x, y, z, mass, vx, vy, vz
 
    end do
 

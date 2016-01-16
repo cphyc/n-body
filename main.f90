@@ -75,7 +75,7 @@ program n_body
          close(un)
       case(1, 2)
          open(newunit=un, file='initial_conditions.dat', status="old")
-         call read_init(un, rank*N + 1, (rank+1)*N + 1, m, r, v)
+         call read_init(un, rank*N + 1, (rank+1)*N, m, r, v)
          close(un)
       case default
          stop "Unknown value of flag_mpi"

@@ -9,10 +9,10 @@ module io_tools
 
 contains
 
-   subroutine read_init(u, start, end, m, r, v) !FIXME: Need to be modified again to old code when flag_mpi=1 will be fixed
+   subroutine read_init(u, read_start, read_end, m, r, v) !FIXME: Need to be modified again to old code when flag_mpi=1 will be fixed
       implicit none
 
-      integer, intent(in) :: u, start, end
+      integer, intent(in) :: u, read_start, read_end
 
       real(xp), intent(out) :: m(:)
       real(xp), intent(out) :: r(:,:)
@@ -20,13 +20,13 @@ contains
 
       integer :: i
 
-      ! Read until start - 1
-      do i = 1, start - 1
+      ! Read until read_start - 1
+      do i = 1, read_start - 1
          read (u, *)
       end do
 
       ! Read end-start
-      do i = 1, end - start + 1
+      do i = 1, read_end - read_start + 1
          read (u, *) r(1, i), r(2, i), r(3, i), m(i), v(1, i), v(2, i), v(3, i)
       end do
 
