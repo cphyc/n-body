@@ -241,6 +241,43 @@ contains
             deallocate(r_np_i)
             deallocate(r_right)
 
+         case(2)
+            allocate(a_comm_i(3, N))
+            allocate(r_i(3, N))
+            ! Iterate over each proc. sending each time the local position
+            ! if (rank == MASTER) then
+            !    print*, ''
+            !    print*, ''
+            !    print*, ''
+            !    print*, ''
+            !    print*, ''
+            !    print*, ''
+            ! end if
+            do i = 0, nprocs - 1
+               a_comm_i = 0._xp
+               if (i == rank) then
+                  r_i = r
+               end if
+
+               call mpi_bcast(r_i, 3*N, MPI_REAL_XP, i, MPI_COMM_WORLD, err)
+
+               call compute_force(m, r_i, 1, N, r, 1, N, a_comm_i)
+               ! print*, a_comm_i
+
+               if (i == rank) then
+                  a = a + a_comm_i
+                  a_comm_i = a
+               else
+                  a = a - a_comm_i
+               end if
+
+               call mpi_reduce(a_comm_i, a, 3*N, MPI_REAL_XP, MPI_SUM, i, MPI_COMM_WORLD, err)
+               ! print*, a
+
+            end do
+
+            deallocate(a_comm_i)
+            deallocate(r_i)
          case default
             stop "Unknown value of flag_mpi"
       end select

@@ -52,9 +52,10 @@ program n_body
          allocate(r(3, npoints))
          allocate(v(3, npoints))
          allocate(a(3, npoints))
-      case(1)
+      case(1, 2)
          if (nprocs == 1) stop 'E: you are trying to parallelize a task that requires 2 or more threads'
          N = npoints / nprocs ! FIXME: Currently, the flag_mpi=1 code doesn’t use subdomains
+
          allocate(m(N))
          allocate(r(3, N))
          allocate(v(3, N))
@@ -62,6 +63,7 @@ program n_body
       case default
          stop "Unknown value of flag_mpi"
    end select
+
 
    !---------------------------------------------
    ! Read initial positions                      ! FIXME: Not compatible with all code modes, and not really good in MPI_low
@@ -71,7 +73,7 @@ program n_body
          open(newunit=un, file='initial_conditions.dat', status="old")
          call read_init(un, 1, npoints, m, r, v)
          close(un)
-      case(1)
+      case(1, 2)
          open(newunit=un, file='initial_conditions.dat', status="old")
          call read_init(un, rank*N + 1, (rank+1)*N + 1, m, r, v)
          close(un)
