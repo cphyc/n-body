@@ -15,7 +15,7 @@ module constants
    real(xp), parameter :: epsilon2 = npoints**(-2._xp/3._xp) / 400._xp ! We take 1/20th of the initial caracteristic distance
 
    real(xp), parameter :: dt = 1.e-3_xp             ! Timestep
-   real(xp), parameter :: maxtime = 1.e1_xp         ! Maximum time (ad hoc)
+   real(xp), parameter :: maxtime = 8.e0_xp         ! Maximum time (ad hoc)
    integer,  parameter :: maxiter = int(maxtime/dt) ! Number of iteration
 
    integer,  parameter :: dump_freq = 10            ! Frequency at which the system is sampled
