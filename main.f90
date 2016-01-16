@@ -7,12 +7,13 @@ program n_body
 
    implicit none
 
-   real(xp), allocatable :: m(:)     ! Masses of the particles
-   real(xp), allocatable :: r(:, :)  ! Positions of the particles (3-dim vectors)
-   real(xp), allocatable :: v(:, :)  ! Speeds of the particles (3-dim vectors)
-   real(xp), allocatable :: a(:, :)  ! Acceleration of the particles (3-dim vectors)
-   real(xp)              :: Ec       ! Total kinetic energy
-   real(xp)              :: Ep       ! Total potential energy
+   ! Physics variables
+   real(xp), allocatable :: m(:)    ! Masses of the particles
+   real(xp), allocatable :: r(:, :) ! Positions of the particles (3-dim vectors)
+   real(xp), allocatable :: v(:, :) ! Speeds of the particles (3-dim vectors)
+   real(xp), allocatable :: a(:, :) ! Acceleration of the particles (3-dim vectors)
+   real(xp)              :: Ec      ! Total kinetic energy
+   real(xp)              :: Ep      ! Total potential energy
 
    ! Counters for the main loop
    real(xp):: t  = 0._xp ! Total time elapsed in the simulation
@@ -32,25 +33,18 @@ program n_body
    call mpi_comm_rank(mpi_comm_world, rank, err)
 
    !---------------------------------------------
-   ! Compute size of domains                     ! FIXME: Should not depend on flag, rest of code must adapt
+   ! Compute size of domains
    !---------------------------------------------
    if (IAND(nprocs,nprocs-1) /= 0) stop 'E: The number of MPI_PROC is not a power of 2'
-   select case (flag_mpi)
-      case(0)
-         if (flag_diag) then
-            N = npoints / (2 * nprocs)
-         else
-            N = npoints / nprocs
-         end if
-      case(1)
-         if (nprocs == 1) stop 'E: you are trying to parallelize a task that requires 2 or more threads'
-         N = npoints / nprocs
-      case default
-         stop "Unknown value of flag_mpi"
-   end select
+
+   if (flag_diag) then
+      N = npoints / (2 * nprocs) ! We subdivide the domains to make couples
+   else
+      N = npoints / nprocs
+   end if
 
    !---------------------------------------------
-   ! Allocate space                              ! FIXME: See above
+   ! Allocate space
    !---------------------------------------------
    select case (flag_mpi)
       case(0)
@@ -59,6 +53,8 @@ program n_body
          allocate(v(3, npoints))
          allocate(a(3, npoints))
       case(1)
+         if (nprocs == 1) stop 'E: you are trying to parallelize a task that requires 2 or more threads'
+         N = npoints / nprocs ! FIXME: Currently, the flag_mpi=1 code doesn’t use subdomains
          allocate(m(N))
          allocate(r(3, N))
          allocate(v(3, N))
@@ -112,7 +108,7 @@ program n_body
    call compute_force_wrap(N, rank, nprocs, m, r, a)
    call compute_energy_wrap(N, rank, nprocs, m, r, v, Ec, Ep)
 
-   if (rank == MASTER) then
+   if (rank == MASTER) then !FIXME: In flag_mpi=1 mode, everyone should write its own data
       print *, 'Dump', iter, t
       call write_dump(una, un, iter, Ec, Ep, t, r, v)
    end if
@@ -136,7 +132,7 @@ program n_body
 
          call compute_energy_wrap(N, rank, nprocs, m, r, v, Ec, Ep)
 
-         if (rank == MASTER) then
+         if (rank == MASTER) then !FIXME: In flag_mpi=1 mode, everyone should write its own data
             print *, 'Dump', iter, t
             call write_dump(una, un, iter, Ec, Ep, t, r, v)
          end if
