@@ -58,8 +58,10 @@ contains
           ! - mpi_groups_to_left all ranks ≤ i and nprocs-1-i
           !--------------------------------------
           if (rank == MASTER) then
-             print*, 'Creating group right', i, 'from', i, 'to', nprocs - 1
-             print*, '      and group left', i, 'from', 0, 'to', i, 'with', nprocs-i-1
+             write(*, '(a,i3,1x,a,i3,1x,a,i3)') &
+                  'Creating group right n°', i, 'from', i, 'to', nprocs - 1
+             write(*, '(a,i3,1x,a,i3,1x,a,i3,1x,a,i3)') &
+                  '      and group left n°', i, 'from', 0, 'to', i, 'with', nprocs-i-1
           end if
           ranges(:, 1) = (/i, nprocs - 1, 1/)
           ranges(:, 2) = 0
