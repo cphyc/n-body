@@ -9,6 +9,8 @@ module mpi_tools
        mpi_comm_to_left(:), mpi_comm_to_right(:)
   integer :: wgroup
 
+  integer :: nprocs_internal, rank_internal
+
   private
 
   public :: initialize_mpi_groups, finalize_mpi_groups, &
@@ -31,6 +33,9 @@ contains
     call mpi_init(err)
     call mpi_comm_size(mpi_comm_world, nprocs, err)
     call mpi_comm_rank(mpi_comm_world, rank, err)
+
+    nprocs_internal = nprocs
+    rank_internal = rank
     !---------------------------------------------
     ! Create subgroups depending on flag
     !---------------------------------------------
