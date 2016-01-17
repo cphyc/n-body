@@ -41,13 +41,12 @@ contains
     ! Create subgroups depending on flag
     !---------------------------------------------
     select case (flag_mpi)
-    case(0)
+    case(0, 2)
     case(1)
-    case(2)
-       allocate(mpi_group_to_left(1:nprocs/2-1))
-       allocate(mpi_group_to_right(1:nprocs/2-1))
-       allocate(mpi_comm_to_left(1:nprocs/2-1))
-       allocate(mpi_comm_to_right(1:nprocs/2-1))
+       allocate(mpi_group_to_left(0:nprocs/2-1))
+       allocate(mpi_group_to_right(0:nprocs/2-1))
+       allocate(mpi_comm_to_left(0:nprocs/2-1))
+       allocate(mpi_comm_to_right(0:nprocs/2-1))
 
        call mpi_comm_group(MPI_COMM_WORLD, wgroup, err)
 
@@ -77,7 +76,6 @@ contains
           call mpi_comm_create(MPI_COMM_WORLD, mpi_group_to_right(i), mpi_comm_to_right(i), err)
           call mpi_comm_create(MPI_COMM_WORLD, mpi_group_to_left(i), mpi_comm_to_left(i), err)
        end do
-
     end select
   end subroutine initialize_mpi_groups
 
