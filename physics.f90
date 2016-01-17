@@ -58,10 +58,10 @@ contains
 
    end subroutine compute_force
 
-   subroutine compute_force_mpi (m, r1, istart, iend, r2, jstart, jend, a1, a2)
+   subroutine compute_force_mpi (m1, r1, istart, iend, m2, r2, jstart, jend, a1, a2)
       implicit none
 
-      real(xp), intent(in) :: m(:)
+      real(xp), intent(in) :: m1(:), m2(:)
       real(xp), intent(in) :: r1(:, :), r2(:, :)
       integer,  intent(in) :: istart, iend, jstart, jend
 
@@ -81,8 +81,8 @@ contains
             vec = r1(:, i) - r2(:, j)
             tmp = vec * G / sqrt(sum(vec**2) + epsilon2)**3
 
-            a1(:, i) = a1(:, i) - m(j)*tmp
-            a2(:, j) = a2(:, j) + m(i)*tmp
+            a1(:, i) = a1(:, i) - m2(j)*tmp
+            a2(:, j) = a2(:, j) + m1(i)*tmp
 
          end do
 
@@ -150,6 +150,7 @@ contains
 
       real(xp), allocatable :: a_comm_i(:, :), a_comm_np_i(:, :), a_right(:, :)
       real(xp), allocatable :: r_i(:, :), r_np_i(:, :), r_right(:, :)
+      real(xp), allocatable :: m_i(:), m_np_i(:), m_right(:)
       real(xp), allocatable :: a_reduced(:, :)
 
       integer :: err = 0
@@ -191,6 +192,9 @@ contains
             allocate(r_i(3, N))
             allocate(r_np_i(3, N))
             allocate(r_right(3, N))
+            allocate(m_i(N))
+            allocate(m_np_i(N))
+            allocate(m_right(N))
 
             a_right = 0._xp
 
@@ -204,40 +208,46 @@ contains
                ! Note: use nprocs-i-1, because nprocs start at 0
                np_i = nprocs - i - 1
 
-               if (rank == np_i) then
+               if (rank == np_i) then !TODO : Check wether doing two sends this way is safe, MPI_TAG?
                   call mpi_send(r,       3*N, MPI_REAL_XP,    i, 0, MPI_COMM_WORLD, err)
+                  call mpi_send(m,         N, MPI_REAL_XP,    i, 0, MPI_COMM_WORLD, err)
                else if (rank == i) then
                   call mpi_recv(r_right, 3*N, MPI_REAL_XP, np_i, 0, MPI_COMM_WORLD, stat, err)
+                  call mpi_recv(m_right,   N, MPI_REAL_XP, np_i, 0, MPI_COMM_WORLD, stat, err)
                end if
 
                if (rank == i) then
                   r_i = r
+                  m_i = m
                else if (rank == np_i) then
                   r_np_i = r
+                  m_np_i = m
                end if
 
                ! Broadcast i-th data
                call mpi_bcast(r_i,    3*N, MPI_REAL_XP,    i, MPI_COMM_WORLD, err)
+               call mpi_bcast(m_i,      N, MPI_REAL_XP,    i, MPI_COMM_WORLD, err)
 
                ! Broadcast n-i-th data
                call mpi_bcast(r_np_i, 3*N, MPI_REAL_XP, np_i, MPI_COMM_WORLD, err)
+               call mpi_bcast(m_np_i,   N, MPI_REAL_XP, np_i, MPI_COMM_WORLD, err)
 
                ! compute own interactions
                a_comm_i = 0._xp
                a_comm_np_i = 0._xp
                if (rank == i) then
                   a_right = 0._xp
-                  call compute_force_diag(m, r,       1, N/2, N, a)
-                  call compute_force_diag(m, r_right, 1, N/2, N, a_right)
+                  call compute_force_diag(m,       r,       1, N/2, N, a)
+                  call compute_force_diag(m_right, r_right, 1, N/2, N, a_right)
                   a_comm_i = a
 
                   ! compute interaction on right side
                else if (rank < i) then
-                  call compute_force_mpi(m, r_np_i, 1, N, r_right, 1, N, a_comm_np_i, a_right)
+                  call compute_force_mpi(m_np_i, r_np_i, 1, N, m_right, r_right, 1, N, a_comm_np_i, a_right)
 
                   ! compute interaction on left side
                else
-                  call compute_force_mpi(m, r_i,    1, N, r,       1, N, a_comm_i, a)
+                  call compute_force_mpi(m_i,    r_i,    1, N, m,       r,       1, N, a_comm_i,    a)
 
                   if (rank == np_i) then
                      a_comm_np_i = a
@@ -272,8 +282,11 @@ contains
             deallocate(r_i)
             deallocate(r_np_i)
             deallocate(r_right)
+            deallocate(m_i)
+            deallocate(m_np_i)
+            deallocate(m_right)
 
-         case(2)
+         case(2) !FIXME: Does not work with different masses
             allocate(a_comm_i(3, N))
             allocate(r_i(3, N))
             ! Iterate over each proc. sending each time the local position
