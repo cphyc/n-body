@@ -225,13 +225,13 @@ contains
                   m_np_i = m
                end if
 
-               ! Broadcast i-th data
-               call mpi_bcast(r_i,    3*N, MPI_REAL_XP,    i, MPI_COMM_WORLD, err)
-               call mpi_bcast(m_i,      N, MPI_REAL_XP,    i, MPI_COMM_WORLD, err)
+               ! Broadcast i-th data to the right of i
+               call mpi_bcast(r_i,    3*N, MPI_REAL_XP,    i, mpi_comm_to_right(i), err)
+               call mpi_bcast(m_i,      N, MPI_REAL_XP,    i, mpi_comm_to_right(i), err)
 
-               ! Broadcast n-i-th data
-               call mpi_bcast(r_np_i, 3*N, MPI_REAL_XP, np_i, MPI_COMM_WORLD, err)
-               call mpi_bcast(m_np_i,   N, MPI_REAL_XP, np_i, MPI_COMM_WORLD, err)
+               ! Broadcast n-i-th data to the left of ?
+               call mpi_bcast(r_np_i, 3*N, MPI_REAL_XP, np_i, mpi_comm_to_left(i), err)
+               call mpi_bcast(m_np_i,   N, MPI_REAL_XP, np_i, mpi_comm_to_left(i), err)
 
                ! compute own interactions
                a_comm_i = 0._xp
@@ -257,10 +257,10 @@ contains
                end if
 
                ! Receive interaction in i
-               call mpi_reduce(a_comm_i,    a, 3*N, MPI_REAL_XP, MPI_SUM,    i, MPI_COMM_WORLD, err)
+               call mpi_reduce(a_comm_i,    a, 3*N, MPI_REAL_XP, MPI_SUM,    i, mpi_comm_to_right(i), err)
 
                ! Receive interaction in np-i-1
-               call mpi_reduce(a_comm_np_i, a, 3*N, MPI_REAL_XP, MPI_SUM, np_i, MPI_COMM_WORLD, err)
+               call mpi_reduce(a_comm_np_i, a, 3*N, MPI_REAL_XP, MPI_SUM, np_i, mpi_comm_to_left(i), err)
 
             end do
 
