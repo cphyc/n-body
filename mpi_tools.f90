@@ -109,23 +109,7 @@ contains
 
 
   subroutine finalize_mpi_groups()
-    integer :: i, err
-    integer :: i0, in
-
-    select case (flag_mpi)
-    case(0, 2)
-    case(1)
-       i0 = lbound(mpi_group_to_left, 1)
-       in = ubound(mpi_group_to_left, 1)
-
-       do i = i0, in
-          call mpi_comm_free(mpi_comm_to_left(i), err)
-          call mpi_comm_free(mpi_comm_to_right(i), err)
-
-          call mpi_group_free(mpi_group_to_left(i), err)
-          call mpi_group_free(mpi_group_to_right(i), err)
-       end do
-    end select
+    integer :: err
 
     call mpi_finalize(err)
   end subroutine finalize_mpi_groups
