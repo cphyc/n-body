@@ -158,6 +158,8 @@ contains
       integer :: stat(MPI_STATUS_SIZE)
       integer :: i, np_i               ! Counters for elements
 
+      integer :: i_to_translate(1), i_translated(1)
+
       integer :: istart, iend
 
 !      integer :: jstart, jend
@@ -225,13 +227,24 @@ contains
                   m_np_i = m
                end if
 
-               ! Broadcast i-th data to the right of i
-               call mpi_bcast(r_i,    3*N, MPI_REAL_XP,    i, mpi_comm_to_right(i), err)
-               call mpi_bcast(m_i,      N, MPI_REAL_XP,    i, mpi_comm_to_right(i), err)
+               if (communicate_right(rank, i)) then
+                  i_to_translate(1) = i
+                  call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_right(i), i_translated, err)
 
-               ! Broadcast n-i-th data to the left of ?
-               call mpi_bcast(r_np_i, 3*N, MPI_REAL_XP, np_i, mpi_comm_to_left(i), err)
-               call mpi_bcast(m_np_i,   N, MPI_REAL_XP, np_i, mpi_comm_to_left(i), err)
+                  ! Broadcast i-th data to the right of i
+                  call mpi_bcast(r_i, 3*N, MPI_REAL_XP, i_translated(1), mpi_comm_to_right(i), err)
+                  call mpi_bcast(m_i,   N, MPI_REAL_XP, i_translated(1), mpi_comm_to_right(i), err)
+               end if
+
+               if (communicate_left(rank, i)) then
+                  i_to_translate(1) = np_i
+                  call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_left(i), i_translated, err)
+
+                  ! Broadcast n-i-th data to the left of ?
+                  call mpi_bcast(r_np_i, 3*N, MPI_REAL_XP, i_translated(1), mpi_comm_to_left(i), err)
+                  call mpi_bcast(m_np_i,   N, MPI_REAL_XP, i_translated(1), mpi_comm_to_left(i), err)
+               end if
+
 
                ! compute own interactions
                a_comm_i = 0._xp
@@ -256,11 +269,19 @@ contains
 
                end if
 
-               ! Receive interaction in i
-               call mpi_reduce(a_comm_i,    a, 3*N, MPI_REAL_XP, MPI_SUM,    i, mpi_comm_to_right(i), err)
+               if (communicate_right(rank, i)) then
+                  i_to_translate(1) = i
+                  call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_right(i), i_translated, err)
+                  ! Receive interaction in i
+                  call mpi_reduce(a_comm_i, a, 3*N, MPI_REAL_XP, MPI_SUM, i_translated(1), mpi_comm_to_right(i), err)
+               end if
 
-               ! Receive interaction in np-i-1
-               call mpi_reduce(a_comm_np_i, a, 3*N, MPI_REAL_XP, MPI_SUM, np_i, mpi_comm_to_left(i), err)
+               if (communicate_left(rank, i)) then
+                  i_to_translate(1) = np_i
+                  call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_left(i), i_translated, err)
+                  ! Receive interaction in np-i-1
+                  call mpi_reduce(a_comm_np_i, a, 3*N, MPI_REAL_XP, MPI_SUM, i_translated(1), mpi_comm_to_left(i), err)
+               end if
 
             end do
 
@@ -341,7 +362,7 @@ contains
 
          do j = 1, npoints
 
-            ! TODO: Check this condition when using mpi_flag=1 and distributed energy computation  
+            ! TODO: Check this condition when using mpi_flag=1 and distributed energy computation
             if (i /= j) then
                Ep = Ep - 0.5_xp * G * m(j) * m(i) / sqrt(sum((r(:, i) - r(:, j))**2) + epsilon2)
             end if
