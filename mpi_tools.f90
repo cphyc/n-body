@@ -69,7 +69,7 @@ contains
 
           ranges(:, 1) = (/0, i, 1/)
           ranges(:, 2) = (/nprocs-1-i, nprocs-1-i, 1/)
-          call mpi_group_range_incl(wgroup, 1, ranges, mpi_group_to_left(i), err)
+          call mpi_group_range_incl(wgroup, 2, ranges, mpi_group_to_left(i), err)
 
           !--------------------------------------
           ! Create communicators along
