@@ -21,6 +21,16 @@ module mpi_tools
 contains
 
   subroutine initialize_mpi_groups(nprocs, rank)
+
+    ! The subroutine creates multiple groups to enable efficient broadcasting. It creates two kind of groups
+    ! 'to_right' groups, that link together the i-th process to the j≥i elements
+    ! 'to_left' groups, that link together the i-th process to the j≤i elements, plus
+    ! the nprocs-1-i element.
+    !
+    ! when a group is defined, one has also to create a communicator to enable
+    ! communication among them
+
+
     integer, intent(out) :: nprocs
     integer, intent(out) :: rank
 
@@ -43,6 +53,8 @@ contains
     select case (flag_mpi)
     case(0, 2)
     case(1)
+       ! we initialize starting at 0, so that
+       ! groups linking i are labelled by i
        allocate(mpi_group_to_left(0:nprocs/2-1))
        allocate(mpi_group_to_right(0:nprocs/2-1))
        allocate(mpi_comm_to_left(0:nprocs/2-1))
