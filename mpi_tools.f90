@@ -79,6 +79,22 @@ contains
     end select
   end subroutine initialize_mpi_groups
 
+  function communicate_right (rank, i)
+    logical :: communicate_right
+    integer, intent(in) :: rank, i
+
+    communicate_right = rank >= i
+
+  end function communicate_right
+
+  function communicate_left (rank, i)
+    logical :: communicate_left
+    integer, intent(in) :: rank, i
+
+    communicate_left = ((rank <= i) .or. (rank == nprocs_internal - i - 1))
+
+  end function communicate_left
+
 
   subroutine finalize_mpi_groups()
     integer :: i, err
