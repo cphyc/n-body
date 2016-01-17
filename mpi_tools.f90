@@ -15,7 +15,8 @@ module mpi_tools
 
   public :: initialize_mpi_groups, finalize_mpi_groups, &
        mpi_group_to_left, mpi_group_to_right, wgroup, &
-       mpi_comm_to_left, mpi_comm_to_right
+       mpi_comm_to_left, mpi_comm_to_right, &
+       communicate_right, communicate_left
 
 contains
 
@@ -78,20 +79,25 @@ contains
     end select
   end subroutine initialize_mpi_groups
 
+
   subroutine finalize_mpi_groups()
     integer :: i, err
     integer :: i0, in
 
-    i0 = lbound(mpi_group_to_left, 1)
-    in = ubound(mpi_group_to_left, 1)
+    select case (flag_mpi)
+    case(0, 2)
+    case(1)
+       i0 = lbound(mpi_group_to_left, 1)
+       in = ubound(mpi_group_to_left, 1)
 
-    do i = i0, in
-       call mpi_comm_free(mpi_comm_to_left(i), err)
-       call mpi_comm_free(mpi_comm_to_right(i), err)
+       do i = i0, in
+          call mpi_comm_free(mpi_comm_to_left(i), err)
+          call mpi_comm_free(mpi_comm_to_right(i), err)
 
-       call mpi_group_free(mpi_group_to_left(i), err)
-       call mpi_group_free(mpi_group_to_right(i), err)
-    end do
+          call mpi_group_free(mpi_group_to_left(i), err)
+          call mpi_group_free(mpi_group_to_right(i), err)
+       end do
+    end select
 
     call mpi_finalize(err)
   end subroutine finalize_mpi_groups
