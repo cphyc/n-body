@@ -105,12 +105,7 @@ program n_body
    ! Compute initial energy and accelerations
    !---------------------------------------------
    call compute_force_wrap(N, rank, nprocs, m, r, a)
-   call compute_energy_wrap(N, rank, nprocs, m, r, v, Ec, Ep)
-
-   if (rank == MASTER) then !FIXME: In flag_mpi=1 mode, everyone should write its own data
-      print *, 'Dump', iter, t
-      call write_dump(una, un, iter, Ec, Ep, t, r, v)
-   end if
+   call compute_energy_wrap(N, t, 0, rank, nprocs, m, r, v, Ec, Ep)
 
    !---------------------------------------------
    ! Loop over time
@@ -128,13 +123,11 @@ program n_body
       iter = iter + 1
 
       if (mod(iter, dump_freq) == 0) then
-
-         call compute_energy_wrap(N, rank, nprocs, m, r, v, Ec, Ep)
-
-         if (rank == MASTER) then !FIXME: In flag_mpi=1 mode, everyone should write its own data
+         if (rank == MASTER) then
             print *, 'Dump', iter, t
-            call write_dump(una, un, iter, Ec, Ep, t, r, v)
          end if
+
+         call compute_energy_wrap(N, t, iter, rank, nprocs, m, r, v, Ec, Ep)
 
       end if
 

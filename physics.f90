@@ -3,6 +3,7 @@ module physics
 
    use mpi
    use mpi_tools
+   use io_tools
 
    implicit none
 
@@ -414,19 +415,21 @@ contains
 
    end subroutine compute_energy_diag
 
-   subroutine compute_energy_wrap(N, rank, nprocs, m, r, v, Ec, Ep)
+   subroutine compute_energy_wrap(N, t, iter, rank, nprocs, m, r, v, Ec, Ep)
       implicit none
 
-      integer,  intent(in) :: N, rank, nprocs
-      real(xp), intent(in) :: m(:)
-      real(xp), intent(in) :: r(:,:), v(:,:)
+      integer,  intent(in) :: N
+      real(xp), intent(in) :: t
+      integer,  intent(in) :: iter, rank, nprocs
+      real(xp), intent(in) :: m(npoints)
+      real(xp), intent(in) :: r(:, :), v(:, :)
 
       real(xp), intent(out) :: Ec, Ep
 
       integer  :: istart, iend
       real(xp) :: Ec_loc, Ep_loc
 
-      real(xp), allocatable :: r_gathered(:, :), v_gathered(:, :), m_gathered(:)
+      real(xp) :: r_gathered(3, npoints), v_gathered(3, npoints), m_gathered(npoints)
 
       integer :: err
 
@@ -452,13 +455,11 @@ contains
          !--------------------------------
          call mpi_reduce(Ec_loc, Ec, 1, MPI_REAL_XP, MPI_SUM, MASTER, MPI_COMM_WORLD, err)
          call mpi_reduce(Ep_loc, Ep, 1, MPI_REAL_XP, MPI_SUM, MASTER, MPI_COMM_WORLD, err)
+
+         r_gathered = r
+         v_gathered = v
       case(1, 2)
          ! gather r and v on master node
-         if (rank == MASTER) then
-            allocate(r_gathered(3, npoints))
-            allocate(v_gathered(3, npoints))
-            allocate(m_gathered(npoints))
-         end if
 
          call mpi_gather(r, 3*N, MPI_REAL_XP, r_gathered, 3*N, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)
          call mpi_gather(v, 3*N, MPI_REAL_XP, v_gathered, 3*N, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)
@@ -474,14 +475,15 @@ contains
                call compute_energy(m_gathered, r_gathered, v_gathered, 1, npoints, Ec, Ep)      ! Compute Ec & Ep at t+dt with slow version
             end if
 
-            deallocate(r_gathered)
-            deallocate(v_gathered)
-            deallocate(m_gathered)
-
          end if
       case default
          stop "Unknown value of flag_mpi"
       end select
+
+      if (rank == MASTER) then !FIXME: In flag_mpi=1 mode, everyone should write its own data
+         call write_dump(una, un, iter, Ec, Ep, t, r_gathered, v_gathered)
+      end if
+
 
    end subroutine compute_energy_wrap
 
