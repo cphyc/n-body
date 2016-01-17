@@ -2,6 +2,7 @@ module physics
    use constants
 
    use mpi
+   use mpi_tools
 
    implicit none
 

@@ -31,7 +31,7 @@ OUTG=gen
 
 all: gen simul
 
-simul: constants.o physics.o io_tools.o main.o
+simul: constants.o mpi_tools.o physics.o io_tools.o main.o
 	$(GC) $(LFLAGS) $^ -o $(OUT)
 
 gen: constants.o main_gen.o

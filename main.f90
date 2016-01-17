@@ -3,7 +3,7 @@ program n_body
    use constants
    use physics
 
-   use mpi
+   use mpi_tools
 
    implicit none
 
@@ -20,7 +20,6 @@ program n_body
    integer :: iter = 0   ! Number of iterations ran
 
    ! Variables for MPI
-   integer :: err = 0    ! Store MPI error code resulting from MPI calls
    integer :: nprocs = 1 ! Must be a power of 2, default to 1 when we don’t run with MPI
    integer :: rank = 0   ! Rank of the tasks among the nprocs, start at 0 and default to this for running without MPI
    integer :: N          ! Length of each block/domain for the MPI nodes
@@ -28,9 +27,7 @@ program n_body
    !---------------------------------------------
    ! Initialize MPI
    !---------------------------------------------
-   call mpi_init(err)
-   call mpi_comm_size(mpi_comm_world, nprocs, err)
-   call mpi_comm_rank(mpi_comm_world, rank, err)
+   call initialize_mpi_groups(nprocs, rank)
 
    !---------------------------------------------
    ! Compute size of domains
@@ -159,6 +156,6 @@ program n_body
    !---------------------------------------------
    ! Stop MPI
    !---------------------------------------------
-   call mpi_finalize(err)
+   call finalize_mpi_groups()
 
 end program n_body
