@@ -83,14 +83,15 @@ program n_body
    !---------------------------------------------
    if (rank == MASTER) then
       print *, '# Simulation parameters'
-      print *, '# dt     :', dt
-      print *, '# npoints:', npoints
-      print *, '# maxtime:', maxtime
-      print *, '# maxiter:', maxiter
-      print *, '# nprocs :', nprocs
-      print *, '# N      :', N
-      print *, '# diag   :', flag_diag
-      print *, '# mpi    :', flag_mpi
+      print *, '# dt             :', dt
+      print *, '# npoints        :', npoints
+      print *, '# maxtime        :', maxtime
+      print *, '# maxiter        :', maxiter
+      print *, '# nprocs         :', nprocs
+      print *, '# N              :', N
+      print *, '# diag           :', flag_diag
+      print *, '# mpi            :', flag_mpi
+      print *, '# memory_factor  :', memory_factor
 
       !---------------------------------------------
       ! Open files for output, add headers
