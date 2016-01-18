@@ -23,7 +23,7 @@ export LD_LIBRARY_PATH=/opt/openmpi/1.4.3-icc/lib:/opt/intel/composerxe-2011.4.1
 # Replace the
 cat constants.f90 |
     sed "s/flag_mpi = .*/flag_mpi = $FLAG_MPI/g" |
-    sed "s/flag_diag = .*/flag_diag = $FLAG_DIAG/g"
+    sed "s/flag_diag = .*/flag_diag = $FLAG_DIAG/g" | tee constants.f90
 
 # Compile
 make clean
