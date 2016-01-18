@@ -158,6 +158,7 @@ contains
       integer :: err = 0
       integer :: stat(MPI_STATUS_SIZE)
       integer :: i, np_i               ! Counters for elements
+      integer :: j, k, s               ! Tmp variables
 
       integer :: i_to_translate(1), i_translated(1)
 
@@ -339,6 +340,57 @@ contains
             deallocate(a_comm_i)
             deallocate(r_i)
          case(3)
+            s = ceiling((maxmemory - 1) * N)
+            allocate(a_comm_i(3, s))
+            allocate(r_i(3, s))
+            allocate(m_i(s))
+
+            print*, rank, 'A'
+            do i = 0, nprocs-1
+
+               print*, rank, 'B'
+
+               do j = 1, ceiling(1. * N/s)
+
+                  print*, rank, 'C', i, j, s
+                  if (i == rank) then
+                     r_i = r(:, (j-1)*s+1:j*s+1)
+                     m_i = m((j-1)*s+1:j*s+1)
+                  end if
+
+                  call mpi_bcast(r_i, 3*s, MPI_REAL_XP, i, MPI_COMM_WORLD, err)
+                  call mpi_bcast(m_i,   s, MPI_REAL_XP, i, MPI_COMM_WORLD, err)
+
+                  print*, rank, 'D', i, j, s
+
+                  do k = j, ceiling(1. * N/s)
+
+                     if (i == rank) then ! own interaction
+
+                        call compute_force_mpi( &
+                             m((j-1)*s+1:j*s+1), r(:, (j-1)*s+1:j*s+1), 1, s, &
+                             m((k-1)*s+1:k*s+1), r(:, (k-1)*s+1:k*s+1), 1, s, &
+                             a(:, (j-1)*s+1:j*s+1), a(:, k*s+1:(k+1)*s+1))
+
+                        a_comm_i = a(:, k*s:(k+1)*s)
+                     else ! interaction with another process
+
+                        call compute_force_mpi(&
+                             m_i,            r_i,               1,   s, &
+                             m((k-1)*s+1:k*s+1), r(:, (k-1)*s+1:k*s+1), 1, s, &
+                             a_comm_i, a(:, (k-1)*s+1:k*s+1))
+
+                     end if
+
+                     call mpi_reduce(a_comm_i, a(1, (k-1)*s+1), 3*s, &
+                          MPI_REAL_XP, MPI_SUM, i, MPI_COMM_WORLD, err)
+                  end do
+               end do
+            end do
+
+            deallocate(r_i)
+            deallocate(m_i)
+            deallocate(a_comm_i)
          case default
             stop "Unknown value of flag_mpi"
       end select
