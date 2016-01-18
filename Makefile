@@ -55,4 +55,5 @@ run: all
 
 runmpi: all
 	./$(OUTG)
-	/usr/bin/time -f "Total: %es User: %Us System: %Ss CPU: %P" $(MPIRUN) -n $(MPI_PROC) ./$(OUT)
+	/usr/bin/time -f "Total: %es User: %Us System: %Ss CPU: %P" \
+		$(MPIRUN) -n $(MPI_PROC) --npernode $(MPI_PROC_PER_NODE) ./$(OUT)
