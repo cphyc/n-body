@@ -1,26 +1,36 @@
 #!/bin/sh
-#SBATCH --job-name=test
+#SBATCH --job-name=<JOB_NAME>
 #SBATCH --time=00:05:00
 #SBATCH --mail-user=corentin.cadiou@obspm.fr --mail-type=ALL
 #SBATCH --partition=medium
-## Pour reserver 1 noeud
-#SBATCH --nodes=2
+#SBATCH --nodes=<NUM_NODES>
 
-export OMP_NUM_THREADS=12
+export OMP_NUM_THREADS=<OMP_NUM_THREADS>
+export MPI_PROCS=<MPI_PROCS>
+export FLAG_MPI=<FLAG_MPI>
+export FLAG_DIAG=<FLAG_DIAG>
+
+# Get a fresh directory
 RUNDIR=/mnt/lnec/travail/$USER/run.${SLURM_JOBID}
-mkdir ${RUNDIR}
 cd ${RUNDIR}
+GIT_SSL_NO_VERIFY=true git clone https://github.com/cphyc/n-body.git#batch .
+
+# Get informations for mpi
 scontrol show hostname $SLURM_JOB_NODELIST > /tmp/hosts.ccadiou.${SLURM_JOBID}
+export LD_LIBRARY_PATH=/opt/openmpi/1.4.3-icc/lib:/opt/intel/composerxe-2011.4.191/compiler/lib/intel64/
 
-cp -r /obs/$USER/n-body/* .
-
+# Replace the
+cat constant.f90 |
+    sed "s/flag_mpi = ./flag_mpi = $FLAG_MPI/g" |
+    sed "s/flag_diag = ./flag_diag = $FLAG_DIAG/g" 
+# Compile
 make clean
 make gen
 make
 
-export LD_LIBRARY_PATH=/opt/openmpi/1.4.3-icc/lib:/opt/intel/composerxe-2011.4.191/compiler/lib/intel64/
-
+# Run initial conditions
 mpirun --hostfile /tmp/hosts.ccadiou.${SLURM_JOBID} --n 1 --npernode 1 ./gen
 
+# Run the simulation
 /usr/bin/time -f "Total: %es User: %Us System: %Ss CPU: %P" -o simul.log \
-	      mpirun --hostfile /tmp/hosts.ccadiou.${SLURM_JOBID} --n 2 --npernode 1 ./simul
+	      mpirun --hostfile /tmp/hosts.ccadiou.${SLURM_JOBID} --n $MPI_PROCS --npernode $PROCS_PER_NODE ./simul
