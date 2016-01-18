@@ -35,7 +35,7 @@ for i, j, diag, mpi in product(nodes, mpi_per_node, flag_diag_arr, flag_mpi_arr)
             else:
                 diagstr = ''
 
-            jobName = 'i{}j{}k{}{}{}'.format(i,j,k,diagstr,4)
+            jobName = 'i{}j{}k{}{}mpi{}'.format(i,j,k,diagstr,mpi)
 
         with open("jobs/"+jobName, 'w') as f:
             for line in lines:
