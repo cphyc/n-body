@@ -21,7 +21,7 @@ scontrol show hostname $SLURM_JOB_NODELIST > /tmp/hosts.ccadiou.${SLURM_JOBID}
 export LD_LIBRARY_PATH=/opt/openmpi/1.4.3-icc/lib:/opt/intel/composerxe-2011.4.191/compiler/lib/intel64/
 
 # Replace the
-cat constant.f90 |
+cat constants.f90 |
     sed "s/flag_mpi = ./flag_mpi = $FLAG_MPI/g" |
     sed "s/flag_diag = ./flag_diag = $FLAG_DIAG/g"
 
