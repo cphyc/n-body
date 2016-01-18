@@ -22,6 +22,7 @@ module constants
 
    logical,  parameter :: flag_diag = .true.        ! Choose force/energy computation subroutine, 0=dummy/1=diag
    integer,  parameter :: flag_mpi = 1              ! Choose mpi logic, 0=full copy of pos. arrays/1=low mem. impact
+   real,     parameter :: maxmemory = 1.5           ! Only usefull when using flag_mpi=3, this is the max mem you can use
    integer,  parameter :: MASTER = 0                ! Choose which rank should be chosen as master node
 
    integer :: un, una ! Unit numbers for file operation
@@ -29,7 +30,8 @@ module constants
    public :: xp, MPI_REAL_XP, &
              pi, G, &
              npoints, epsilon2, dt, maxtime, maxiter, &
-             dump_freq, flag_diag, flag_mpi, MASTER, &
+             dump_freq, flag_diag, flag_mpi, &
+             maxmemory, MASTER, &
              un, una
 
 contains

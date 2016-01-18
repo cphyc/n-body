@@ -338,6 +338,7 @@ contains
 
             deallocate(a_comm_i)
             deallocate(r_i)
+         case(3)
          case default
             stop "Unknown value of flag_mpi"
       end select
@@ -458,7 +459,7 @@ contains
 
          r_gathered = r
          v_gathered = v
-      case(1, 2)
+      case(1, 2, 3)
          ! gather r and v on master node
 
          call mpi_gather(r, 3*N, MPI_REAL_XP, r_gathered, 3*N, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)
