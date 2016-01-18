@@ -363,6 +363,93 @@ contains
             deallocate(r_i)
             deallocate(m_i)
             deallocate(a_comm_i)
+         case(4)
+            !--------------------------------
+            ! Allocate and initialize
+            !--------------------------------
+            allocate(a_comm_i(3, N/2))
+            allocate(a_comm_np_i(3, N))
+            allocate(r_i(3, N/2))
+            allocate(r_np_i(3, N))
+            allocate(m_i(N/2))
+            allocate(m_np_i(N))
+
+            !--------------------------------
+            ! Scatter positions across all processes
+            ! and compute interactions
+            !--------------------------------
+
+            do i = 0, nprocs - 1
+               ! Get data from nprocs-i in i
+
+               if (rank == i) then
+                  r_i = r(:, 1:N/2)
+                  m_i = m(1:N/2)
+                  r_np_i = r
+                  m_np_i = m
+               end if
+
+               if (communicate_right(rank, i)) then
+                  i_to_translate(1) = i
+                  call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_right(i), i_translated, err)
+
+                  ! Broadcast i-th data to the right of i
+                  call mpi_bcast(r_i, 3*N/2, MPI_REAL_XP, i_translated(1), mpi_comm_to_right(i), err)
+           print *, rank, "I was here"
+                  call mpi_bcast(m_i,   N/2, MPI_REAL_XP, i_translated(1), mpi_comm_to_right(i), err)
+               end if
+
+               if (communicate_left(rank, i)) then
+                  i_to_translate(1) = i
+                  call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_left(i), i_translated, err)
+
+                  ! Broadcast n-i-th data to the left of i (included)
+                  call mpi_bcast(r_np_i, 3*N, MPI_REAL_XP, i_translated(1), mpi_comm_to_left(i), err)
+                  call mpi_bcast(m_np_i,   N, MPI_REAL_XP, i_translated(1), mpi_comm_to_left(i), err)
+               end if
+
+               ! compute own interactions
+               a_comm_i = 0._xp
+               a_comm_np_i = 0._xp
+               if (rank == i) then
+                  call compute_force_diag(m,       r,       1, N/2, N, a)
+                  a_comm_i = a(:,1:N/2)
+
+                  ! compute interaction on right side
+               else if (rank < i) then
+                  call compute_force_mpi(m_np_i, r_np_i, 1, N, m(N/2+1:N), r(:,N/2+1:N), 1, N/2, a_comm_np_i, a(:,N/2+1:N))
+
+                  ! compute interaction on left side
+               else
+                  call compute_force_mpi(m_i,    r_i,    1, N/2, m,       r,       1, N, a_comm_i,    a)
+
+               end if
+
+               if (communicate_right(rank, i)) then
+                  i_to_translate(1) = i
+                  call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_right(i), i_translated, err)
+                  ! Receive interaction in i
+                  call mpi_reduce(a_comm_i, a, 3*N/2, MPI_REAL_XP, MPI_SUM, i_translated(1), mpi_comm_to_right(i), err)
+               end if
+
+               if (rank == i) a_comm_np_i = a
+
+               if (communicate_left(rank, i)) then
+                  i_to_translate(1) = i
+                  call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_left(i), i_translated, err)
+                  ! Receive interaction in np-i-1
+                  call mpi_reduce(a_comm_np_i, a, 3*N, MPI_REAL_XP, MPI_SUM, i_translated(1), mpi_comm_to_left(i), err)
+               end if
+
+            end do
+
+            deallocate(a_comm_i)
+            deallocate(a_comm_np_i)
+            deallocate(r_i)
+            deallocate(r_np_i)
+            deallocate(m_i)
+            deallocate(m_np_i)
+
          case default
             stop "Unknown value of flag_mpi"
       end select
@@ -483,7 +570,7 @@ contains
 
          r_gathered = r
          v_gathered = v
-      case(1, 2, 3)
+      case(1, 2, 3, 4)
          ! gather r and v on master node
 
          call mpi_gather(r, 3*N, MPI_REAL_XP, r_gathered, 3*N, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)

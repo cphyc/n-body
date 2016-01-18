@@ -33,6 +33,8 @@ program n_body
    ! Compute size of domains
    !---------------------------------------------
    if (IAND(nprocs,nprocs-1) /= 0) stop 'E: The number of MPI_PROC is not a power of 2'
+   if (npoints < nprocs) stop 'E: You need at least the same number of particles than MPI_PROC'
+   if (flag_mpi==4 .and. npoints < 2*nprocs) stop 'E: You need at least twice more particles than MPI_PROC'
 
    if (flag_diag) then
       N = npoints / (2 * nprocs) ! We subdivide the domains to make couples
@@ -49,8 +51,8 @@ program n_body
          allocate(r(3, npoints))
          allocate(v(3, npoints))
          allocate(a(3, npoints))
-      case(1, 2, 3)
-         if (nprocs == 1) stop 'E: you are trying to parallelize a task that requires 2 or more threads'
+      case(1, 2, 3, 4)
+         if (nprocs == 1) stop 'E: you are trying to parallelize a task that requires 2 or more MPI_PROC'
          N = npoints / nprocs ! FIXME: Currently, the flag_mpi=1 code doesn’t use subdomains
 
          allocate(m(N))
@@ -61,7 +63,6 @@ program n_body
          stop "Unknown value of flag_mpi"
    end select
 
-
    !---------------------------------------------
    ! Read initial positions                      ! FIXME: Not compatible with all code modes, and not really good in MPI_low
    !---------------------------------------------
@@ -70,7 +71,7 @@ program n_body
          open(newunit=un, file='initial_conditions.dat', status="old")
          call read_init(un, 1, npoints, m, r, v)
          close(un)
-      case(1, 2, 3)
+      case(1, 2, 3, 4)
          open(newunit=un, file='initial_conditions.dat', status="old")
          call read_init(un, rank*N + 1, (rank+1)*N, m, r, v)
          close(un)

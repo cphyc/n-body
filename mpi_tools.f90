@@ -88,6 +88,42 @@ contains
           call mpi_comm_create(MPI_COMM_WORLD, mpi_group_to_right(i), mpi_comm_to_right(i), err)
           call mpi_comm_create(MPI_COMM_WORLD, mpi_group_to_left(i), mpi_comm_to_left(i), err)
        end do
+    case(4)
+       ! we initialize starting at 0, so that
+       ! groups linking i are labelled by i
+       allocate(mpi_group_to_left(0:nprocs-1))
+       allocate(mpi_group_to_right(0:nprocs-1))
+       allocate(mpi_comm_to_left(0:nprocs-1))
+       allocate(mpi_comm_to_right(0:nprocs-1))
+
+       call mpi_comm_group(MPI_COMM_WORLD, wgroup, err)
+
+       do i = 0, nprocs - 1
+          !--------------------------------------
+          ! Create two groups
+          ! - mpi_groups_to_right all ranks ≥ i
+          ! - mpi_groups_to_left all ranks ≤ i and nprocs-1-i
+          !--------------------------------------
+          if (rank == MASTER) then
+             write(*, '(a,i3,1x,a,i3,1x,a,i3)') &
+                  'Creating group right n°', i, 'from', i, 'to', nprocs - 1
+             write(*, '(a,i3,1x,a,i3,1x,a,i3,1x,a,i3)') &
+                  '      and group left n°', i, 'from', 0, 'to', i
+          end if
+          ranges(:, 1) = (/i, nprocs - 1, 1/)
+          ranges(:, 2) = 0
+          call mpi_group_range_incl(wgroup, 1, ranges, mpi_group_to_right(i), err)
+
+          ranges(:, 1) = (/0, i, 1/)
+          ranges(:, 2) = 0
+          call mpi_group_range_incl(wgroup, 1, ranges, mpi_group_to_left(i), err)
+
+          !--------------------------------------
+          ! Create communicators along
+          !--------------------------------------
+          call mpi_comm_create(MPI_COMM_WORLD, mpi_group_to_right(i), mpi_comm_to_right(i), err)
+          call mpi_comm_create(MPI_COMM_WORLD, mpi_group_to_left(i), mpi_comm_to_left(i), err)
+       end do
     end select
   end subroutine initialize_mpi_groups
 
