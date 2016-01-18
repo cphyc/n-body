@@ -163,6 +163,7 @@ contains
       integer :: i_to_translate(1), i_translated(1)
 
       integer :: istart, iend
+      logical :: communicate_right, communicate_left
 
       a = 0._xp
 
@@ -211,6 +212,9 @@ contains
                ! Note: use nprocs-i-1, because nprocs start at 0
                np_i = nprocs - i - 1
 
+               communicate_right = rank >= i
+               communicate_left  = ((rank <= i) .or. (rank == np_i))
+
                if (rank == np_i) then !TODO : Check wether doing two sends this way is safe, MPI_TAG?
                   call mpi_send(r,       3*N, MPI_REAL_XP,    i, 0, MPI_COMM_WORLD, err)
                   call mpi_send(m,         N, MPI_REAL_XP,    i, 0, MPI_COMM_WORLD, err)
@@ -227,7 +231,7 @@ contains
                   m_np_i = m
                end if
 
-               if (communicate_right(rank, i)) then
+               if (communicate_right) then
                   i_to_translate(1) = i
                   call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_right(i), i_translated, err)
 
@@ -236,7 +240,7 @@ contains
                   call mpi_bcast(m_i,   N, MPI_REAL_XP, i_translated(1), mpi_comm_to_right(i), err)
                end if
 
-               if (communicate_left(rank, i)) then
+               if (communicate_left) then
                   i_to_translate(1) = np_i
                   call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_left(i), i_translated, err)
 
@@ -269,14 +273,14 @@ contains
 
                end if
 
-               if (communicate_right(rank, i)) then
+               if (communicate_right) then
                   i_to_translate(1) = i
                   call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_right(i), i_translated, err)
                   ! Receive interaction in i
                   call mpi_reduce(a_comm_i, a, 3*N, MPI_REAL_XP, MPI_SUM, i_translated(1), mpi_comm_to_right(i), err)
                end if
 
-               if (communicate_left(rank, i)) then
+               if (communicate_left) then
                   i_to_translate(1) = np_i
                   call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_left(i), i_translated, err)
                   ! Receive interaction in np-i-1
@@ -382,6 +386,9 @@ contains
             do i = 0, nprocs - 1
                ! Get data from nprocs-i in i
 
+               communicate_right = rank >= i
+               communicate_left  = rank <= i
+
                if (rank == i) then
                   r_i = r(:, 1:N/2)
                   m_i = m(1:N/2)
@@ -389,17 +396,16 @@ contains
                   m_np_i = m
                end if
 
-               if (communicate_right(rank, i)) then
+               if (communicate_right) then
                   i_to_translate(1) = i
                   call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_right(i), i_translated, err)
 
                   ! Broadcast i-th data to the right of i
                   call mpi_bcast(r_i, 3*N/2, MPI_REAL_XP, i_translated(1), mpi_comm_to_right(i), err)
-           print *, rank, "I was here"
                   call mpi_bcast(m_i,   N/2, MPI_REAL_XP, i_translated(1), mpi_comm_to_right(i), err)
                end if
 
-               if (communicate_left(rank, i)) then
+               if (communicate_left) then
                   i_to_translate(1) = i
                   call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_left(i), i_translated, err)
 
@@ -425,7 +431,7 @@ contains
 
                end if
 
-               if (communicate_right(rank, i)) then
+               if (communicate_right) then
                   i_to_translate(1) = i
                   call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_right(i), i_translated, err)
                   ! Receive interaction in i
@@ -434,7 +440,7 @@ contains
 
                if (rank == i) a_comm_np_i = a
 
-               if (communicate_left(rank, i)) then
+               if (communicate_left) then
                   i_to_translate(1) = i
                   call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_left(i), i_translated, err)
                   ! Receive interaction in np-i-1

@@ -15,8 +15,7 @@ module mpi_tools
 
   public :: initialize_mpi_groups, finalize_mpi_groups, &
        mpi_group_to_left, mpi_group_to_right, wgroup, &
-       mpi_comm_to_left, mpi_comm_to_right, &
-       communicate_right, communicate_left
+       mpi_comm_to_left, mpi_comm_to_right
 
 contains
 
@@ -127,26 +126,11 @@ contains
     end select
   end subroutine initialize_mpi_groups
 
-  function communicate_right (rank, i)
-    logical :: communicate_right
-    integer, intent(in) :: rank, i
-
-    communicate_right = rank >= i
-
-  end function communicate_right
-
-  function communicate_left (rank, i)
-    logical :: communicate_left
-    integer, intent(in) :: rank, i
-
-    communicate_left = ((rank <= i) .or. (rank == nprocs_internal - i - 1))
-
-  end function communicate_left
-
-
   subroutine finalize_mpi_groups()
     integer :: err
 
     call mpi_finalize(err)
+
   end subroutine finalize_mpi_groups
+
 end module mpi_tools
