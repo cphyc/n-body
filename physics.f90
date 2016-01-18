@@ -351,7 +351,6 @@ contains
             allocate(r_i(3, s))
             allocate(m_i(s))
 
-            a_comm_i = 0._xp
 
             ! print*, rank, 'A'
             do i = 0, nprocs-1
@@ -362,54 +361,20 @@ contains
                   ! print*, rank, 'C', i, j, s
                   if (i == rank) then
                      r_i = r(:, (j-1)*s+1:j*s)
-                     m_i = m((j-1)*s+1:j*s)
                   end if
 
                   call mpi_bcast(r_i, 3*s, MPI_REAL_XP, i, MPI_COMM_WORLD, err)
-                  call mpi_bcast(m_i,   s, MPI_REAL_XP, i, MPI_COMM_WORLD, err)
 
                   do k = 1, memory_factor
+                     a_comm_i = 0._xp
 
-                     if (i == rank) then ! own interaction
+                     call compute_force(m, &
+                          r, (k-1)*s+1, k*s, &
+                          r_i,       1,   s, &
+                          a_comm_i)
 
-                        call compute_force_mpi( &
-                             m, r, (j-1)*s+1, j*s, &
-                             m, r, (k-1)*s+1, k*s, &
-                             a, a)
-                        print*, rank, v(3, N)
-                        a_comm_i = a(:, (k-1)*s+1:k*s)
-                     else ! interaction with another process
-
-                        call compute_force_mpi(&
-                             m_i, r_i,         1,   s, &
-                             m,   r,   (k-1)*s+1, k*s, &
-                             a_comm_i, a)
-
-                     end if
-
-                     call mpi_reduce(a_comm_i, a(1, (k-1)*s+1), 3*s, &
+                     call mpi_reduce(a_comm_i(1,1), a(:, (k-1)*s+1), 3*s, &
                           MPI_REAL_XP, MPI_SUM, i, MPI_COMM_WORLD, err)
-
-                     ! write(*, '(4(a,i2,1x),3x,a,3x,6(e14.5))') &
-                     !      'rank=', rank, &
-                     !      'i=', i, &
-                     !      'j=', j, &
-                     !      'k=', k, &
-                     !      '+', a_comm_i(:, 1:2)
-
-                     ! if (rank == i) then
-                     !    print*, '——————————————————————————' // &
-                     !         '—————————————————————————————' // &
-                     !         '————————————————'
-                     !    write(*, '(4(a,i2,1x),3x,a,3x,6(e14.5))') &
-                     !         'rank=', rank, &
-                     !         'i=', i, &
-                     !         'j=', j, &
-                     !         'k=', k, &
-                     !         '=', a(:, (k-1)*s+1:(k-1)*s+2)
-                     !    print*, ''
-
-                     ! end if
 
                   end do
                end do
