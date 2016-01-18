@@ -242,7 +242,7 @@ contains
                   i_to_translate(1) = np_i
                   call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_left(i), i_translated, err)
 
-                  ! Broadcast n-i-th data to the left of ?
+                  ! Broadcast n-i-th data to the left of i (included)
                   call mpi_bcast(r_np_i, 3*N, MPI_REAL_XP, i_translated(1), mpi_comm_to_left(i), err)
                   call mpi_bcast(m_np_i,   N, MPI_REAL_XP, i_translated(1), mpi_comm_to_left(i), err)
                end if
