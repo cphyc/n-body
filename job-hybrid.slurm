@@ -12,8 +12,9 @@ export FLAG_DIAG=<FLAG_DIAG>
 
 # Get a fresh directory
 RUNDIR=/mnt/lnec/travail/$USER/run.${SLURM_JOBID}
+mkdir ${RUNDIR}
 cd ${RUNDIR}
-GIT_SSL_NO_VERIFY=true git clone https://github.com/cphyc/n-body.git#batch .
+GIT_SSL_NO_VERIFY=true git clone https://github.com/cphyc/n-body.git
 
 # Get informations for mpi
 scontrol show hostname $SLURM_JOB_NODELIST > /tmp/hosts.ccadiou.${SLURM_JOBID}
@@ -22,7 +23,8 @@ export LD_LIBRARY_PATH=/opt/openmpi/1.4.3-icc/lib:/opt/intel/composerxe-2011.4.1
 # Replace the
 cat constant.f90 |
     sed "s/flag_mpi = ./flag_mpi = $FLAG_MPI/g" |
-    sed "s/flag_diag = ./flag_diag = $FLAG_DIAG/g" 
+    sed "s/flag_diag = ./flag_diag = $FLAG_DIAG/g"
+
 # Compile
 make clean
 make gen
