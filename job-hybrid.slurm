@@ -15,10 +15,12 @@ export FLAG_DIAG=<FLAG_DIAG>
 RUNDIR=/mnt/lnec/travail/$USER/run.${SLURM_JOBID}
 mkdir ${RUNDIR}
 cd ${RUNDIR}
-GIT_SSL_NO_VERIFY=true git clone http://github.com/cphyc/n-body.git
+#GIT_SSL_NO_VERIFY=true git clone http://github.com/cphyc/n-body.git
+cp /obs/$USER/n-body/*.f90 .
+cp /obs/$USER/n-body/Makefile .
 
 # Get informations for mpi
-scontrol show hostname $SLURM_JOB_NODELIST > /tmp/hosts.ccadiou.${SLURM_JOBID}
+scontrol show hostname $SLURM_JOB_NODELIST > /tmp/hosts.$USER.${SLURM_JOBID}
 export LD_LIBRARY_PATH=/opt/openmpi/1.4.3-icc/lib:/opt/intel/composerxe-2011.4.191/compiler/lib/intel64/
 
 # Replace the
@@ -32,8 +34,8 @@ make gen
 make
 
 # Run initial conditions
-mpirun --hostfile /tmp/hosts.ccadiou.${SLURM_JOBID} --n 1 --npernode 1 ./gen
+mpirun --hostfile /tmp/hosts.$USER.${SLURM_JOBID} --n 1 --npernode 1 ./gen
 
 # Run the simulation
 /usr/bin/time -f "Total: %es User: %Us System: %Ss CPU: %P" -o simul.log \
-	      mpirun --hostfile /tmp/hosts.ccadiou.${SLURM_JOBID} --n $MPI_PROCS --npernode $PROCS_PER_NODE ./simul
+	      mpirun --hostfile /tmp/hosts.$USER.${SLURM_JOBID} --n $MPI_PROCS --npernode $PROCS_PER_NODE ./simul
