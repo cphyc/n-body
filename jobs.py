@@ -10,6 +10,7 @@ flag_mpi_arr = [0, 1, 2, 3, 4]
 def replace_fun(line, **kwa):
     newLine = re.sub(r'<OMP_NUM_THREADS>', str(kwa['omp_num_threads']), line)
     newLine = re.sub(r'<MPI_PROCS>', str(kwa['mpi_procs']), newLine)
+    newLine = re.sub(r'<PROCS_PER_NODE>', str(kwa['procs_per_node']), newLine)
     newLine = re.sub(r'<FLAG_MPI>', str(kwa['flag_mpi']), newLine)
     newLine = re.sub(r'<FLAG_DIAG>', str(kwa['flag_diag']), newLine)
     newLine = re.sub(r'<JOB_NAME>', str(kwa['job_name']), newLine)
@@ -43,6 +44,7 @@ for i, j, diag, mpi in product(nodes, mpi_per_node, flag_diag_arr, flag_mpi_arr)
                                 num_nodes=i,
                                 omp_num_threads=k,
                                 mpi_procs=i*j,
+                                procs_per_node=j,
                                 flag_mpi=mpi,
                                 flag_diag=diag,
                                 job_name=jobName)
