@@ -335,7 +335,7 @@ contains
             if (s*memory_factor /= N) then
                print*, 'E: Memory_factor', memory_factor
                print*, 'E: Number of particles per process', N
-               stop 'The memory factor should be a divider of the number of particles per process'
+               stop 'E: The memory factor should be a divider of the number of particles per process'
             end if
 
             allocate(a_comm_i(3, s))
@@ -352,16 +352,10 @@ contains
 
                   call mpi_bcast(r_i, 3*s, MPI_REAL_XP, i, MPI_COMM_WORLD, err)
                   a_comm_i = 0._xp
-                  do k = 1, memory_factor
 
-                     call compute_force(m, &
-                          r_i,       1,   s, &
-                          r(:, (k-1)*s+1:k*s), 1, s, &
-                          a_comm_i)
+                  call compute_force(m, r_i, 1, s, r, 1, N, a_comm_i)
 
-                  end do
-                  call mpi_reduce(a_comm_i, a(:, (j-1)*s+1:j*s), 3*s, &
-                       MPI_REAL_XP, MPI_SUM, i, MPI_COMM_WORLD, err)
+                  call mpi_reduce(a_comm_i, a(:, (j-1)*s+1:j*s), 3*s, MPI_REAL_XP, MPI_SUM, i, MPI_COMM_WORLD, err)
 
                end do
             end do
