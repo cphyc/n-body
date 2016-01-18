@@ -347,7 +347,7 @@ contains
                do j = 1, memory_factor
 
                   if (i == rank) then
-                     r_i(:, 1:s) = r(:, (j-1)*s+1:j*s)
+                     r_i = r(:, (j-1)*s+1:j*s)
                   end if
 
                   call mpi_bcast(r_i, 3*s, MPI_REAL_XP, i, MPI_COMM_WORLD, err)
