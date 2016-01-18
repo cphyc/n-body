@@ -164,8 +164,6 @@ contains
 
       integer :: istart, iend
 
-!      integer :: jstart, jend
-
       a = 0._xp
 
       select case(flag_mpi)
@@ -314,14 +312,7 @@ contains
             allocate(a_comm_i(3, N))
             allocate(r_i(3, N))
             ! Iterate over each proc. sending each time the local position
-            ! if (rank == MASTER) then
-            !    print*, ''
-            !    print*, ''
-            !    print*, ''
-            !    print*, ''
-            !    print*, ''
-            !    print*, ''
-            ! end if
+
             do i = 0, nprocs - 1
 
                if (i == rank) then
@@ -351,20 +342,15 @@ contains
             allocate(r_i(3, s))
             allocate(m_i(s))
 
-
-            ! print*, rank, 'A'
             do i = 0, nprocs-1
 
-               ! print*, rank, 'B'
-
                do j = 1, memory_factor
-                  ! print*, rank, 'C', i, j, s
+
                   if (i == rank) then
                      r_i(:, 1:s) = r(:, (j-1)*s+1:j*s)
                   end if
 
                   call mpi_bcast(r_i, 3*s, MPI_REAL_XP, i, MPI_COMM_WORLD, err)
-
                   a_comm_i = 0._xp
                   do k = 1, memory_factor
 
