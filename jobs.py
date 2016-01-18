@@ -5,7 +5,7 @@ import os
 nodes = [1, 2, 4, 8, 16]
 mpi_per_node = [1, 2, 4, 8]
 flag_diag_arr = ['.true.', '.false.']
-flag_mpi_arr = [1, 2, 3, 4]
+flag_mpi_arr = [0, 1, 2, 3, 4]
 
 def replace_fun(line, **kwa):
     newLine = re.sub(r'<OMP_NUM_THREADS>', str(kwa['omp_num_threads']), line)
