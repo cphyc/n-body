@@ -373,17 +373,17 @@ contains
                      if (i == rank) then ! own interaction
 
                         call compute_force_mpi( &
-                             m((j-1)*s+1:j*s), r(:, (j-1)*s:j*s), 1, s, &
-                             m((k-1)*s+1:k*s), r(:, (k-1)*s:k*s), 1, s, &
-                             a(:, (j-1)*s+1:j*s), a(:, (k-1)*s:k*s))
-
+                             m, r, (j-1)*s+1, j*s, &
+                             m, r, (k-1)*s+1, k*s, &
+                             a, a)
+                        print*, rank, v(3, N)
                         a_comm_i = a(:, (k-1)*s+1:k*s)
                      else ! interaction with another process
 
                         call compute_force_mpi(&
-                             m_i,            r_i,               1,   s, &
-                             m((k-1)*s+1:k*s), r(:, (k-1)*s+1:k*s), 1, s, &
-                             a_comm_i, a(:, (k-1)*s+1:k*s))
+                             m_i, r_i,         1,   s, &
+                             m,   r,   (k-1)*s+1, k*s, &
+                             a_comm_i, a)
 
                      end if
 
