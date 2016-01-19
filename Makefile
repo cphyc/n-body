@@ -50,7 +50,7 @@ watch:
 	bash autocompile.sh
 
 sync:
-	rsync -ahz --progress *{.f90,.sh,.slurm} mesopsl1.obspm.fr:"~/n-body"
+	rsync -ahz --progress *.f90 mesopsl1.obspm.fr:"~/n-body"
 
 run: all
 	./$(OUTG)
