@@ -72,8 +72,8 @@ contains
       real(xp) :: vec(3), tmp(3)
       integer  :: i, j
 
-      ! No REDUCTION(+:a) because only one thread is modifying a(:,i)
-      !$OMP PARALLEL PRIVATE(j, vec, tmp)
+      ! No REDUCTION(+:a1) because only one thread is modifying a(:,i)
+      !$OMP PARALLEL PRIVATE(j, vec, tmp) REDUCTION(+:a2)
       !$OMP DO SCHEDULE(RUNTIME)
       do i = istart, iend
 
