@@ -8,12 +8,14 @@ GC=mpifort
 CFLAGS=-Wall -Wextra -pedantic -std=f2008 -O3 -march=native -fopenmp
 LFLAGS=-fopenmp
 MPIRUN=mpirun
+MPIPPN=-npernode
 
 # Configuration for mpif90
 #GC=mpif90
 #CFLAGS=-warn all -std08 -02 -xHost -openmp
 #LFLAGS=-openmp
 #MPIRUN=mpirun
+#MPIPPN=-npernode
 
 # Configuration for ifort
 #GC=ifort
@@ -25,6 +27,7 @@ MPIRUN=mpirun
 #CFLAGS=-warn all -std08 -02 -xHost -openmp
 #LFLAGS=-openmp
 #MPIRUN=mpiexec.hydra
+#MPIPPN=-ppn
 
 OUT=simul
 OUTG=gen
@@ -56,4 +59,4 @@ run: all
 runmpi: all
 	./$(OUTG)
 	/usr/bin/time -f "Total: %es User: %Us System: %Ss CPU: %P" \
-		$(MPIRUN) -n $(MPI_PROC) --npernode $(MPI_PROC_PER_NODE) ./$(OUT)
+		$(MPIRUN) -n $(MPI_PROC) $(MPIPPN) $(PROCS_PER_NODE) ./$(OUT)
