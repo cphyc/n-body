@@ -5,3 +5,4 @@ simul
 gen
 *.dat
 *.log
+jobs/
