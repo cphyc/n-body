@@ -50,7 +50,7 @@ contains
     ! Create subgroups depending on flag
     !---------------------------------------------
     select case (flag_mpi)
-    case(0, 2, 3)
+    case(0, 2)
     case(1)
        ! we initialize starting at 0, so that
        ! groups linking i are labelled by i

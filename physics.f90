@@ -313,28 +313,6 @@ contains
             deallocate(m_right)
 
          case(2) !FIXME: Does not work with different masses
-            allocate(a_comm_i(3, N))
-            allocate(r_i(3, N))
-            ! Iterate over each proc. sending each time the local position
-
-            do i = 0, nprocs - 1
-
-               if (i == rank) then
-                  r_i = r
-               end if
-
-               call mpi_bcast(r_i, 3*N, MPI_REAL_XP, i, MPI_COMM_WORLD, err)
-
-               a_comm_i = 0._xp
-               call compute_force(m, r_i, 1, N, r, 1, N, a_comm_i)
-
-               call mpi_reduce(a_comm_i, a, 3*N, MPI_REAL_XP, MPI_SUM, i, MPI_COMM_WORLD, err)
-
-            end do
-
-            deallocate(a_comm_i)
-            deallocate(r_i)
-         case(3)
             s = N / memory_factor
             if (s*memory_factor /= N) then
                print*, 'E: Memory_factor', memory_factor
@@ -344,7 +322,6 @@ contains
 
             allocate(a_comm_i(3, s))
             allocate(r_i(3, s))
-            allocate(m_i(s))
 
             do i = 0, nprocs-1
 
@@ -355,8 +332,8 @@ contains
                   end if
 
                   call mpi_bcast(r_i, 3*s, MPI_REAL_XP, i, MPI_COMM_WORLD, err)
-                  a_comm_i = 0._xp
 
+                  a_comm_i = 0._xp
                   call compute_force(m, r_i, 1, s, r, 1, N, a_comm_i)
 
                   call mpi_reduce(a_comm_i, a(:, (j-1)*s+1:j*s), 3*s, MPI_REAL_XP, MPI_SUM, i, MPI_COMM_WORLD, err)
@@ -365,7 +342,6 @@ contains
             end do
 
             deallocate(r_i)
-            deallocate(m_i)
             deallocate(a_comm_i)
          case(4)
             !--------------------------------
@@ -576,7 +552,7 @@ contains
 
          r_gathered = r
          v_gathered = v
-      case(1, 2, 3, 4)
+      case(1, 2, 4)
          ! gather r and v on master node
 
          call mpi_gather(r, 3*N, MPI_REAL_XP, r_gathered, 3*N, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)
