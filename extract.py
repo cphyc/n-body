@@ -61,12 +61,26 @@ def analyseRun(path):
     runData['run'] = run
     return runData
 
+def keepRun(run):
+    return run > 1
+
 if __name__ == '__main__':
     data = pd.DataFrame()
     counter = 0
 
-    # iterate over all directories matching 'run.*'
-    for _dir in [d for d in Path('.').glob('run.*') if d.is_dir()]:
+    # iterate all paths matching 'run.*'
+    # only keep directories and runs > MIN_RUN_NUMBER
+    def keepDir(_dir):
+        b = _dir.is_dir()
+
+        dirStr = str(_dir)
+        run = int(dirStr.split('.')[-1])
+
+        b = b and keepRun(run)
+        return b
+
+    dirList = [d for d in Path('.').glob('run.*') if keepDir(d)]
+    for _dir in dirList:
         # read data
         dataDict = analyseRun(_dir)
 
