@@ -2,8 +2,8 @@
 from pathlib import Path
 import pandas as pd
 
-workPath = Path('.') #Path('/mnt/lnec/travail/bpagani/')
-callerPath = Path('.') # Path('/obs/bpagani/n-body')
+workPath = Path('results/bpagani') #Path('/mnt/lnec/travail/bpagani/')
+callerPath = Path('results') # Path('/obs/bpagani/n-body')
 def parseParams(f, runData):
     line = f.readlines()[0].split()
     runData['nodes'] = int(line[0])
@@ -79,7 +79,7 @@ if __name__ == '__main__':
         b = b and keepRun(run)
         return b
 
-    dirList = [d for d in Path('.').glob('run.*') if keepDir(d)]
+    dirList = [d for d in workPath.glob('run.*') if keepDir(d)]
     for _dir in dirList:
         # read data
         dataDict = analyseRun(_dir)
