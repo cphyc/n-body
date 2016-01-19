@@ -30,68 +30,62 @@ program n_body
    call initialize_mpi_groups(nprocs, rank)
 
    !---------------------------------------------
-   ! Compute size of domains
+   ! Perform some sanity checks
    !---------------------------------------------
    if (IAND(nprocs,nprocs-1) /= 0) stop 'E: The number of MPI_PROC is not a power of 2'
    if (npoints < nprocs) stop 'E: You need at least the same number of particles than MPI_PROC'
-   if (flag_mpi==4 .and. npoints < 2*nprocs) stop 'E: You need at least twice more particles than MPI_PROC'
+   if (flag_memory .and. flag_diag .and. npoints < 2*nprocs) stop 'E: You need at least twice more particles than MPI_PROC'
 
-   if (flag_diag) then
-      N = npoints / (2 * nprocs) ! We subdivide the domains to make couples
-   else
+   !---------------------------------------------
+   ! Compute size of domains, allocate space
+   !---------------------------------------------
+   if (flag_memory) then
       N = npoints / nprocs
+
+      allocate(m(N))
+      allocate(r(3, N))
+      allocate(v(3, N))
+      allocate(a(3, N))
+   else
+      if (flag_diag) then
+         N = npoints / (2 * nprocs) ! We subdivide the domains to make couples !TODO: Check whether we could avoid this
+      else
+         N = npoints / nprocs
+      end if
+
+      allocate(m(npoints))
+      allocate(r(3, npoints))
+      allocate(v(3, npoints))
+      allocate(a(3, npoints))
    end if
-
-   !---------------------------------------------
-   ! Allocate space
-   !---------------------------------------------
-   select case (flag_mpi)
-      case(0)
-         allocate(m(npoints))
-         allocate(r(3, npoints))
-         allocate(v(3, npoints))
-         allocate(a(3, npoints))
-      case(2, 4)
-         N = npoints / nprocs ! FIXME: Currently, the flag_mpi=1 code doesn’t use subdomains
-
-         allocate(m(N))
-         allocate(r(3, N))
-         allocate(v(3, N))
-         allocate(a(3, N))
-      case default
-         stop "Unknown value of flag_mpi"
-   end select
 
    !---------------------------------------------
    ! Read initial positions                      ! FIXME: Not compatible with all code modes, and not really good in MPI_low
    !---------------------------------------------
-   select case (flag_mpi)
-      case(0)
-         open(newunit=un, file='initial_conditions.dat', status="old")
-         call read_init(un, 1, npoints, m, r, v)
-         close(un)
-      case(2, 4)
-         open(newunit=un, file='initial_conditions.dat', status="old")
-         call read_init(un, rank*N + 1, (rank+1)*N, m, r, v)
-         close(un)
-      case default
-         stop "Unknown value of flag_mpi"
-   end select
+   if (flag_memory) then
+      open(newunit=un, file='initial_conditions.dat', status="old")
+      call read_init(un, rank*N + 1, (rank+1)*N, m, r, v)
+      close(un)
+   else
+      open(newunit=un, file='initial_conditions.dat', status="old")
+      call read_init(un, 1, npoints, m, r, v)
+      close(un)
+   end if
 
    !---------------------------------------------
    ! Print parameters
    !---------------------------------------------
    if (rank == MASTER) then
       print *, '# Simulation parameters'
-      print *, '# dt             :', dt
-      print *, '# npoints        :', npoints
-      print *, '# maxtime        :', maxtime
-      print *, '# maxiter        :', maxiter
-      print *, '# nprocs         :', nprocs
-      print *, '# N              :', N
-      print *, '# diag           :', flag_diag
-      print *, '# mpi            :', flag_mpi
-      print *, '# memory_factor  :', memory_factor
+      print *, '# dt            :', dt
+      print *, '# npoints       :', npoints
+      print *, '# maxtime       :', maxtime
+      print *, '# maxiter       :', maxiter
+      print *, '# nprocs        :', nprocs
+      print *, '# N             :', N
+      print *, '# diag          :', flag_diag
+      print *, '# memory        :', flag_memory
+      print *, '# memory_factor :', memory_factor
 
       !---------------------------------------------
       ! Open files for output, add headers

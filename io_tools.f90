@@ -9,7 +9,7 @@ module io_tools
 
 contains
 
-   subroutine read_init(u, read_start, read_end, m, r, v) !FIXME: Need to be modified again to old code when flag_mpi=1 will be fixed
+   subroutine read_init(u, read_start, read_end, m, r, v) !FIXME: Probably to be modified again when MPI_IO will be in.
       implicit none
 
       integer, intent(in) :: u, read_start, read_end
@@ -32,7 +32,7 @@ contains
 
    end subroutine read_init
 
-   subroutine write_dump_headers (u, ua) ! FIXME: We will probably need to split this one when flag_mpi=1 will be fixed
+   subroutine write_dump_headers (u, ua) ! FIXME: We will probably need to split this one when MPI_IO will be in.
       implicit none
       integer, intent(in) :: u, ua
 
@@ -41,7 +41,7 @@ contains
 
    end subroutine write_dump_headers
 
-   subroutine write_dump (iter, Ec, Ep, t, r, v) ! FIXME: We will probably need to split this one when flag_mpi=1 will be fixed
+   subroutine write_dump (iter, Ec, Ep, t, r, v) ! FIXME: We will probably need to split this one when MPI_IO will be in.
       implicit none
 
       real(xp), intent(in) :: Ec, Ep, t

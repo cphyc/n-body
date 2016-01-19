@@ -45,9 +45,7 @@ contains
     !---------------------------------------------
     ! Create subgroups depending on flag
     !---------------------------------------------
-    select case (flag_mpi)
-    case(0, 2)
-    case(4)
+    if (flag_memory) then
        ! we initialize starting at 0, so that
        ! groups linking i are labelled by i
        allocate(mpi_group_to_left(0:nprocs-1))
@@ -61,14 +59,13 @@ contains
           !--------------------------------------
           ! Create two groups
           ! - mpi_groups_to_right all ranks ≥ i
-          ! - mpi_groups_to_left all ranks ≤ i and nprocs-1-i
+          ! - mpi_groups_to_left all ranks ≤ i
           !--------------------------------------
           if (rank == MASTER) then
-             write(*, '(a,i3,1x,a,i3,1x,a,i3)') &
-                  'Creating group right of n°', i, 'from', i, 'to', nprocs - 1
-             write(*, '(a,i3,1x,a,i3,1x,a,i3,1x,a,i3)') &
-                  '      and group left of n°', i, 'from', 0, 'to', i
+             write(*, '(a,i3,1x,a,i3,1x,a,i3)')         'Creating group right of n°', i, 'from', i, 'to', nprocs - 1
+             write(*, '(a,i3,1x,a,i3,1x,a,i3,1x,a,i3)') '      and group left of n°', i, 'from', 0, 'to', i
           end if
+
           ranges(:,1) = (/i, nprocs - 1, 1/)
           call mpi_group_range_incl(wgroup, 1, ranges, mpi_group_to_right(i), err)
 
@@ -81,13 +78,17 @@ contains
           call mpi_comm_create(MPI_COMM_WORLD, mpi_group_to_right(i), mpi_comm_to_right(i), err)
           call mpi_comm_create(MPI_COMM_WORLD, mpi_group_to_left(i), mpi_comm_to_left(i), err)
        end do
-    end select
+
+    end if
+
   end subroutine initialize_mpi_groups
 
   subroutine finalize_mpi_groups()
-    integer :: err
+     implicit none
 
-    call mpi_finalize(err)
+     integer :: err
+
+     call mpi_finalize(err)
 
   end subroutine finalize_mpi_groups
 

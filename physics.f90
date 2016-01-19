@@ -150,74 +150,25 @@ contains
 
       real(xp), intent(out) :: a(:,:)
 
-      real(xp), allocatable :: a_comm_i(:, :), a_comm_np_i(:, :), a_right(:, :)
-      real(xp), allocatable :: r_i(:, :), r_np_i(:, :), r_right(:, :)
-      real(xp), allocatable :: m_i(:), m_np_i(:), m_right(:)
+      real(xp), allocatable :: a_comm_i(:, :), a_comm_np_i(:, :)
+      real(xp), allocatable :: r_i(:, :), r_np_i(:, :)
+      real(xp), allocatable :: m_i(:), m_np_i(:)
       real(xp), allocatable :: a_reduced(:, :)
 
       integer :: err = 0
-      integer :: stat(MPI_STATUS_SIZE)
-      integer :: i, np_i               ! Counters for elements
-      integer :: j, k, s               ! Tmp variables
+
+      integer :: i      ! Counters for elements
+      integer :: j, s   ! Tmp variables
 
       integer :: i_to_translate(1), i_translated(1)
 
-      integer :: istart, iend
       logical :: communicate_right, communicate_left
 
       a = 0._xp
 
-      select case(flag_mpi)
-         case(0)
-            allocate(a_reduced(3, npoints))
-            !--------------------------------
-            ! Get the domain for integration from the number of nodes
-            !--------------------------------
-            istart = N*rank + 1
-            iend   = istart + N - 1
-            if (flag_diag) then
-               call compute_force_diag(m, r, istart, iend, npoints, a)  ! Compute a(t+dt) with fast version
-            else
-               call compute_force(m, r, istart, iend, r, 1, npoints, a) ! Compute a(t+dt) with slow version
-            end if
-            !--------------------------------
-            ! reduce accelerations
-            !--------------------------------
-            call mpi_allreduce(a, a_reduced, npoints*3, MPI_REAL_XP, MPI_SUM, MPI_COMM_WORLD, err)
-            a = a_reduced
-            deallocate(a_reduced)
-         case(2) !FIXME: Does not work with different masses
-            s = N / memory_factor
-            if (s*memory_factor /= N) then
-               print*, 'E: Memory_factor', memory_factor
-               print*, 'E: Number of particles per process', N
-               stop 'E: The memory factor should be a divider of the number of particles per process'
-            end if
+      if (flag_memory) then
 
-            allocate(a_comm_i(3, s))
-            allocate(r_i(3, s))
-
-            do i = 0, nprocs-1
-
-               do j = 1, memory_factor
-
-                  if (i == rank) then
-                     r_i = r(:, (j-1)*s+1:j*s)
-                  end if
-
-                  call mpi_bcast(r_i, 3*s, MPI_REAL_XP, i, MPI_COMM_WORLD, err)
-
-                  a_comm_i = 0._xp
-                  call compute_force(m, r_i, 1, s, r, 1, N, a_comm_i)
-
-                  call mpi_reduce(a_comm_i, a(:, (j-1)*s+1:j*s), 3*s, MPI_REAL_XP, MPI_SUM, i, MPI_COMM_WORLD, err)
-
-               end do
-            end do
-
-            deallocate(r_i)
-            deallocate(a_comm_i)
-         case(4)
+         if (flag_diag) then
             !--------------------------------
             ! Allocate and initialize
             !--------------------------------
@@ -306,9 +257,62 @@ contains
             deallocate(m_i)
             deallocate(m_np_i)
 
-         case default
-            stop "Unknown value of flag_mpi"
-      end select
+         else !FIXME: Does not work with different masses
+            s = N / memory_factor
+            if (s*memory_factor /= N) then
+               print*, 'E: Memory_factor', memory_factor
+               print*, 'E: Number of particles per process', N
+               stop 'E: The memory factor should be a divider of the number of particles per process'
+            end if
+
+            allocate(a_comm_i(3, s))
+            allocate(r_i(3, s))
+
+            do i = 0, nprocs-1
+
+               do j = 1, memory_factor
+
+                  if (i == rank) then
+                     r_i = r(:, (j-1)*s+1:j*s)
+                  end if
+
+                  call mpi_bcast(r_i, 3*s, MPI_REAL_XP, i, MPI_COMM_WORLD, err)
+
+                  a_comm_i = 0._xp
+                  call compute_force(m, r_i, 1, s, r, 1, N, a_comm_i)
+
+                  call mpi_reduce(a_comm_i, a(:, (j-1)*s+1:j*s), 3*s, MPI_REAL_XP, MPI_SUM, i, MPI_COMM_WORLD, err)
+
+               end do
+            end do
+
+            deallocate(r_i)
+            deallocate(a_comm_i)
+         end if
+
+      else
+         allocate(a_reduced(3, npoints))
+
+         !--------------------------------
+         ! Get the domain for integration from the number of nodes
+         !--------------------------------
+         if (flag_diag) then
+            ! Compute a(t+dt) with fast version
+            call compute_force_diag(m, r, N*rank + 1, N*(rank + 1), npoints, a)
+         else
+            ! Compute a(t+dt) with slow version
+            call compute_force(m, r, N*rank + 1, N*(rank + 1), r, 1, npoints, a)
+         end if
+
+         !--------------------------------
+         ! Reduce accelerations
+         !--------------------------------
+         call mpi_allreduce(a, a_reduced, npoints*3, MPI_REAL_XP, MPI_SUM, MPI_COMM_WORLD, err)
+         a = a_reduced
+
+         deallocate(a_reduced)
+
+      end if
 
    end subroutine compute_force_wrap
 
@@ -394,7 +398,6 @@ contains
 
       real(xp), intent(out) :: Ec, Ep
 
-      integer  :: istart, iend
       real(xp) :: Ec_loc, Ep_loc
 
       real(xp) :: r_gathered(3, npoints), v_gathered(3, npoints), m_gathered(npoints)
@@ -404,30 +407,8 @@ contains
       Ec = 0._xp
       Ep = 0._xp
 
-      select case(flag_mpi)
-      case(0)
-         !--------------------------------
-         ! Get the domain for integration from the number of nodes
-         !--------------------------------
-         istart = N*rank + 1
-         iend   = istart + N - 1
-         Ec_loc = 0._xp
-         Ep_loc = 0._xp
-         if (flag_diag) then
-            call compute_energy_diag(m, r, v, istart, iend, npoints, Ec_loc, Ep_loc) ! Compute Ec & Ep at t+dt with fast version
-         else
-            call compute_energy(m, r, v, istart, iend, Ec_loc, Ep_loc)      ! Compute Ec & Ep at t+dt with slow version
-         end if
-         !--------------------------------
-         ! reduce accelerations
-         !--------------------------------
-         call mpi_reduce(Ec_loc, Ec, 1, MPI_REAL_XP, MPI_SUM, MASTER, MPI_COMM_WORLD, err)
-         call mpi_reduce(Ep_loc, Ep, 1, MPI_REAL_XP, MPI_SUM, MASTER, MPI_COMM_WORLD, err)
-
-         r_gathered = r
-         v_gathered = v
-      case(2, 4)
-         ! gather r and v on master node
+      if (flag_memory) then
+         ! Gather r and v on master node !FIXME: Everyone should calculate its own energy
 
          call mpi_gather(r, 3*N, MPI_REAL_XP, r_gathered, 3*N, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)
          call mpi_gather(v, 3*N, MPI_REAL_XP, v_gathered, 3*N, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)
@@ -436,19 +417,37 @@ contains
          if (rank == MASTER) then
 
             if (flag_diag) then
-               call compute_energy_diag(m_gathered, r_gathered, v_gathered, 1, npoints/2, npoints, Ec, Ep) ! Compute Ec & Ep at t+dt with fast version
+               ! Compute Ec & Ep at t+dt with fast version
+               call compute_energy_diag(m_gathered, r_gathered, v_gathered, 1, npoints/2, npoints, Ec, Ep)
             else
+               ! Compute Ec & Ep at t+dt with slow version
                ! TODO: This would be broken when computing using subdomains, because Ec must not be calculated elsewhere than the
                ! real diag
-               call compute_energy(m_gathered, r_gathered, v_gathered, 1, npoints, Ec, Ep)      ! Compute Ec & Ep at t+dt with slow version
+               call compute_energy(m_gathered, r_gathered, v_gathered, 1, npoints, Ec, Ep)
             end if
 
          end if
-      case default
-         stop "Unknown value of flag_mpi"
-      end select
+      else
+         Ec_loc = 0._xp
+         Ep_loc = 0._xp
+         if (flag_diag) then
+            ! Compute Ec & Ep at t+dt with fast version
+            call compute_energy_diag(m, r, v, N*rank + 1, N*(rank + 1), npoints, Ec_loc, Ep_loc)
+         else
+            ! Compute Ec & Ep at t+dt with slow version
+            call compute_energy(m, r, v, N*rank + 1, N*(rank + 1), Ec_loc, Ep_loc)
+         end if
+         !--------------------------------
+         ! Reduce energies
+         !--------------------------------
+         call mpi_reduce(Ec_loc, Ec, 1, MPI_REAL_XP, MPI_SUM, MASTER, MPI_COMM_WORLD, err)
+         call mpi_reduce(Ep_loc, Ep, 1, MPI_REAL_XP, MPI_SUM, MASTER, MPI_COMM_WORLD, err)
 
-      if (rank == MASTER) then !FIXME: In flag_mpi=1 mode, everyone should write its own data
+         r_gathered = r
+         v_gathered = v
+      end if
+
+      if (rank == MASTER) then !FIXME: In flag_memory=.true. mode, everyone should write its own data
          call write_dump(iter, Ec, Ep, t, r_gathered, v_gathered)
       end if
 
