@@ -58,17 +58,23 @@ def analyseRun(path):
     parseSimulLog(simulLogFile, runData)
     parseOutput(outputFile, runData)
 
+    runData['run'] = run
     return runData
 
 if __name__ == '__main__':
-    data = pd.DataFrame(columns=['dt', 'nprocs', 'total_time', 'memory', 'npoints',
-                                 'omp_per_mpi', 'N', 'cpu', 'maxtime', 'maxiter',
-                                 'nodes', 'memoryFactor', 'mpi_procs', 'system_time',
-                                 'mpi_per_node', 'user_time', 'diag'])
+    data = pd.DataFrame()
     counter = 0
+
+    # iterate over all directories matching 'run.*'
     for _dir in [d for d in Path('.').glob('run.*') if d.is_dir()]:
+        # read data
         dataDict = analyseRun(_dir)
+
+        # copy data in panda data frame
         for key in dataDict.keys():
             data.loc[counter,key] = dataDict[key]
 
+        counter += 1
+
+    # do something useful with it, or not
     print(data)
