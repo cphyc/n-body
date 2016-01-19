@@ -47,7 +47,7 @@ def parseOutput(outputFile, runData):
     runData['memoryFactor'] = int(nl().split(':')[-1])
 
 def analyseRun(path):
-    run = str(path).split('.')[-1]
+    run = int(str(path).split('.')[-1])
     simulLogFile = (path / 'simul.log').open()
     paramsFile = (path / 'params.log').open()
 
