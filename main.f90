@@ -51,8 +51,7 @@ program n_body
          allocate(r(3, npoints))
          allocate(v(3, npoints))
          allocate(a(3, npoints))
-      case(1, 2, 4)
-         if (nprocs == 1) stop 'E: you are trying to parallelize a task that requires 2 or more MPI_PROC'
+      case(2, 4)
          N = npoints / nprocs ! FIXME: Currently, the flag_mpi=1 code doesn’t use subdomains
 
          allocate(m(N))
@@ -71,7 +70,7 @@ program n_body
          open(newunit=un, file='initial_conditions.dat', status="old")
          call read_init(un, 1, npoints, m, r, v)
          close(un)
-      case(1, 2, 4)
+      case(2, 4)
          open(newunit=un, file='initial_conditions.dat', status="old")
          call read_init(un, rank*N + 1, (rank+1)*N, m, r, v)
          close(un)

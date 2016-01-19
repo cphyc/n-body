@@ -21,12 +21,12 @@ module constants
    integer,  parameter :: dump_freq = 10            ! Frequency at which the system is sampled
 
    logical,  parameter :: flag_diag = .true.        ! Choose force/energy computation subroutine, 0=dummy/1=diag
-   integer,  parameter :: flag_mpi = 3              ! Choose mpi logic, 0=full copy of pos. arrays/1=low mem. impact
+   integer,  parameter :: flag_mpi = 4              ! Choose mpi logic, 0=full copy of pos. arrays/1=low mem. impact !FIXME: Update
    ! The following option describes how much we want to spare memory. If each process
    ! uses n bytes of memory for its own data, a memory_factor = 1 allow the code to use
    ! 2*n bytes for the interactions computations. If memory_factor = k, it uses n*(1+1/k) bytes
    ! this option should be a divider of the number of particles per process
-   integer,  parameter :: memory_factor = 1         ! Only useful
+   integer,  parameter :: memory_factor = 1         ! Only useful !FIXME: Update this comment
    integer,  parameter :: MASTER = 0                ! Choose which rank should be chosen as master node
 
    integer :: un, una ! Unit numbers for file operation

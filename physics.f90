@@ -186,132 +186,6 @@ contains
             call mpi_allreduce(a, a_reduced, npoints*3, MPI_REAL_XP, MPI_SUM, MPI_COMM_WORLD, err)
             a = a_reduced
             deallocate(a_reduced)
-         case(1)
-            !--------------------------------
-            ! Allocate and initialize
-            !--------------------------------
-            allocate(a_comm_i(3, N))
-            allocate(a_comm_np_i(3, N))
-            allocate(a_right(3, N))
-            allocate(r_i(3, N))
-            allocate(r_np_i(3, N))
-            allocate(r_right(3, N))
-            allocate(m_i(N))
-            allocate(m_np_i(N))
-            allocate(m_right(N))
-
-            a_right = 0._xp
-
-            !--------------------------------
-            ! Scatter positions across all processes
-            ! and compute interactions
-            !--------------------------------
-
-            do i = 0, nprocs / 2 - 1
-               ! Get data from nprocs-i in i
-               ! Note: use nprocs-i-1, because nprocs start at 0
-               np_i = nprocs - i - 1
-
-               communicate_right = rank >= i
-               communicate_left  = ((rank <= i) .or. (rank == np_i))
-
-               if (rank == np_i) then !TODO : Check wether doing two sends this way is safe, MPI_TAG?
-                  call mpi_send(r,       3*N, MPI_REAL_XP,    i, 0, MPI_COMM_WORLD, err)
-                  call mpi_send(m,         N, MPI_REAL_XP,    i, 0, MPI_COMM_WORLD, err)
-               else if (rank == i) then
-                  call mpi_recv(r_right, 3*N, MPI_REAL_XP, np_i, 0, MPI_COMM_WORLD, stat, err)
-                  call mpi_recv(m_right,   N, MPI_REAL_XP, np_i, 0, MPI_COMM_WORLD, stat, err)
-               end if
-
-               if (rank == i) then
-                  r_i = r
-                  m_i = m
-               else if (rank == np_i) then
-                  r_np_i = r
-                  m_np_i = m
-               end if
-
-               if (communicate_right) then
-                  i_to_translate(1) = i
-                  call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_right(i), i_translated, err)
-
-                  ! Broadcast i-th data to the right of i
-                  call mpi_bcast(r_i, 3*N, MPI_REAL_XP, i_translated(1), mpi_comm_to_right(i), err)
-                  call mpi_bcast(m_i,   N, MPI_REAL_XP, i_translated(1), mpi_comm_to_right(i), err)
-               end if
-
-               if (communicate_left) then
-                  i_to_translate(1) = np_i
-                  call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_left(i), i_translated, err)
-
-                  ! Broadcast n-i-th data to the left of i (included)
-                  call mpi_bcast(r_np_i, 3*N, MPI_REAL_XP, i_translated(1), mpi_comm_to_left(i), err)
-                  call mpi_bcast(m_np_i,   N, MPI_REAL_XP, i_translated(1), mpi_comm_to_left(i), err)
-               end if
-
-
-               ! compute own interactions
-               a_comm_i = 0._xp
-               a_comm_np_i = 0._xp
-               if (rank == i) then
-                  a_right = 0._xp
-                  call compute_force_diag(m,       r,       1, N/2, N, a)
-                  call compute_force_diag(m_right, r_right, 1, N/2, N, a_right)
-                  a_comm_i = a
-
-                  ! compute interaction on right side
-               else if (rank < i) then
-                  call compute_force_mpi(m_np_i, r_np_i, 1, N, m_right, r_right, 1, N, a_comm_np_i, a_right)
-
-                  ! compute interaction on left side
-               else
-                  call compute_force_mpi(m_i,    r_i,    1, N, m,       r,       1, N, a_comm_i,    a)
-
-                  if (rank == np_i) then
-                     a_comm_np_i = a
-                  end if
-
-               end if
-
-               if (communicate_right) then
-                  i_to_translate(1) = i
-                  call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_right(i), i_translated, err)
-                  ! Receive interaction in i
-                  call mpi_reduce(a_comm_i, a, 3*N, MPI_REAL_XP, MPI_SUM, i_translated(1), mpi_comm_to_right(i), err)
-               end if
-
-               if (communicate_left) then
-                  i_to_translate(1) = np_i
-                  call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_left(i), i_translated, err)
-                  ! Receive interaction in np-i-1
-                  call mpi_reduce(a_comm_np_i, a, 3*N, MPI_REAL_XP, MPI_SUM, i_translated(1), mpi_comm_to_left(i), err)
-               end if
-
-            end do
-
-            !--------------------------------
-            ! Gather missing data
-            !--------------------------------
-            do i = 0, nprocs / 2 - 1
-               np_i = nprocs - i - 1
-               if (rank == i) then
-                  call mpi_send(a_right,     3*N, MPI_REAL_XP, np_i, 0, MPI_COMM_WORLD, err)
-               else if (rank == np_i) then
-                  call mpi_recv(a_comm_np_i, 3*N, MPI_REAL_XP,    i, 0, MPI_COMM_WORLD, stat, err)
-                  a = a + a_comm_np_i
-               end if
-            end do
-
-            deallocate(a_comm_i)
-            deallocate(a_comm_np_i)
-            deallocate(a_right)
-            deallocate(r_i)
-            deallocate(r_np_i)
-            deallocate(r_right)
-            deallocate(m_i)
-            deallocate(m_np_i)
-            deallocate(m_right)
-
          case(2) !FIXME: Does not work with different masses
             s = N / memory_factor
             if (s*memory_factor /= N) then
@@ -552,7 +426,7 @@ contains
 
          r_gathered = r
          v_gathered = v
-      case(1, 2, 4)
+      case(2, 4)
          ! gather r and v on master node
 
          call mpi_gather(r, 3*N, MPI_REAL_XP, r_gathered, 3*N, MPI_REAL_XP, 0, MPI_COMM_WORLD, err)
