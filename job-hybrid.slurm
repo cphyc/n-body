@@ -1,8 +1,8 @@
 #!/bin/sh
 #SBATCH --job-name=<JOB_NAME>
-#SBATCH --time=01:00:00
+#SBATCH --time=12:00:00
 #SBATCH --mail-user="corentin.cadiou@obspm.fr,bruno.pagani@obspm.fr" --mail-type=ALL
-#SBATCH --partition=short
+#SBATCH --partition=medium
 #SBATCH --nodes=<NUM_NODES>
 
 export OMP_NUM_THREADS=<OMP_NUM_THREADS>

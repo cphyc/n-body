@@ -1,33 +1,8 @@
-# Configuration for gfortran
-#GC=gfortran
-#CFLAGS=-Wall -Wextra -pedantic -std=f2008 -O2 -march=native -fopenmp
-#LFLAGS=-fopenmp
-
-# Configuration for mpifort
-GC=mpifort
-CFLAGS=-Wall -Wextra -pedantic -std=f2008 -O3 -march=native -fopenmp
-LFLAGS=-fopenmp
+GC=mpif90
+CFLAGS=-warn all -std08 -02 -xHost -openmp
+LFLAGS=-openmp
 MPIRUN=mpirun
 MPIPPN=-npernode
-
-# Configuration for mpif90
-#GC=mpif90
-#CFLAGS=-warn all -std08 -02 -xHost -openmp
-#LFLAGS=-openmp
-#MPIRUN=mpirun
-#MPIPPN=-npernode
-
-# Configuration for ifort
-#GC=ifort
-#CFLAGS=-warn all -std08 -02 -xHost -openmp
-#LFLAGS=-openmp
-
-# Configuration for mpiifort
-#GC=mpiifort
-#CFLAGS=-warn all -std08 -02 -xHost -openmp
-#LFLAGS=-openmp
-#MPIRUN=mpiexec.hydra
-#MPIPPN=-ppn
 
 OUT=simul
 OUTG=gen
@@ -46,17 +21,6 @@ gen: constants.o main_gen.o
 clean:
 	rm -f *.o *.mod $(OUT) $(OUTG)
 
-watch:
-	bash autocompile.sh
-
 sync:
-	rsync -ahz --progress *.f90 mesopsl1.obspm.fr:"~/n-body"
+	rsync -ahz --progress *.f90 Makefile mesopsl1.obspm.fr:"~/n-body"
 
-run: all
-	./$(OUTG)
-	/usr/bin/time -f "Total: %es User: %Us System: %Ss CPU: %P" ./$(OUT)
-
-runmpi: all
-	./$(OUTG)
-	/usr/bin/time -f "Total: %es User: %Us System: %Ss CPU: %P" \
-		$(MPIRUN) -n $(MPI_PROC) $(MPIPPN) $(PROCS_PER_NODE) ./$(OUT)

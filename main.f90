@@ -118,9 +118,6 @@ program n_body
       iter = iter + 1
 
       if (mod(iter, dump_freq) == 0) then
-         if (rank == MASTER) then
-            print *, 'Dump', iter, t
-         end if
 
          call compute_energy_wrap(N, t, iter, rank, nprocs, m, r, v, Ec, Ep)
 
