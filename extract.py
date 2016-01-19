@@ -1,5 +1,6 @@
 #!/bin/python
 from pathlib import Path
+import pandas as pd
 
 workPath = Path('.') #Path('/mnt/lnec/travail/bpagani/')
 callerPath = Path('.') # Path('/obs/bpagani/n-body')
@@ -7,7 +8,7 @@ def parseParams(f, runData):
     line = f.readlines()[0].split()
     runData['nodes'] = int(line[0])
     runData['mpi_per_node'] = int(line[2])
-    runData['mpi_procs'] = nodes*mpi_per_node
+    runData['mpi_procs'] = runData['nodes']*runData['mpi_per_node']
     runData['omp_per_mpi'] = int(line[6].replace('(', ''))
 
 def parseSimulLog(f, runData):
@@ -45,8 +46,8 @@ def parseOutput(outputFile, runData):
 
     runData['memoryFactor'] = int(nl().split(':')[-1])
 
-def analyseRun(run):
-    path = workPath / ('run.'+str(run))
+def analyseRun(path):
+    run = str(path).split('.')[-1]
     simulLogFile = (path / 'simul.log').open()
     paramsFile = (path / 'params.log').open()
 
@@ -57,6 +58,17 @@ def analyseRun(run):
     parseSimulLog(simulLogFile, runData)
     parseOutput(outputFile, runData)
 
-    print(runData)
+    return runData
 
-analyseRun('12345')
+if __name__ == '__main__':
+    data = pd.DataFrame(columns=['dt', 'nprocs', 'total_time', 'memory', 'npoints',
+                                 'omp_per_mpi', 'N', 'cpu', 'maxtime', 'maxiter',
+                                 'nodes', 'memoryFactor', 'mpi_procs', 'system_time',
+                                 'mpi_per_node', 'user_time', 'diag'])
+    counter = 0
+    for _dir in [d for d in Path('.').glob('run.*') if d.is_dir()]:
+        dataDict = analyseRun(_dir)
+        for key in dataDict.keys():
+            data.loc[counter,key] = dataDict[key]
+
+    print(data)
