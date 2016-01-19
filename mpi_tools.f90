@@ -21,8 +21,7 @@ contains
 
     ! The subroutine creates multiple groups to enable efficient broadcasting. It creates two kind of groups
     ! 'to_right' groups, that link together the i-th process to the j≥i elements
-    ! 'to_left' groups, that link together the i-th process to the j≤i elements, plus
-    ! the nprocs-1-i element. !FIXME: Update this comment
+    ! 'to_left' groups, that link together the i-th process to the j≤i elements
     !
     ! when a group is defined, one has also to create a communicator to enable
     ! communication among them
