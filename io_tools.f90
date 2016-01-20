@@ -32,7 +32,7 @@ contains
 
    end subroutine read_init
 
-   subroutine write_dump_headers (u, ua) ! FIXME: We will probably need to split this one when MPI_IO will be in.
+   subroutine write_dump_headers (u, ua) ! TODO: We will probably need to split this one when MPI_IO will be in.
       implicit none
       integer, intent(in) :: u, ua
 
@@ -41,7 +41,7 @@ contains
 
    end subroutine write_dump_headers
 
-   subroutine write_dump (iter, Ec, Ep, t, r, v) ! FIXME: We will probably need to split this one when MPI_IO will be in.
+   subroutine write_dump (iter, Ec, Ep, t, r, v) ! TODO: We will probably need to split this one when MPI_IO will be in.
       implicit none
 
       real(xp), intent(in) :: Ec, Ep, t
