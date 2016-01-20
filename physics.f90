@@ -168,6 +168,9 @@ contains
 
       if (flag_memory) then
 
+         !---------------------------------------------------------------------------
+         ! Compute the force using only own particles and communicating each other
+         !---------------------------------------------------------------------------
          if (flag_diag) then
             !--------------------------------
             ! Allocate and initialize
@@ -180,8 +183,7 @@ contains
             allocate(m_np_i(N))
 
             !--------------------------------
-            ! Scatter positions across all processes
-            ! and compute interactions
+            ! Loop over all processes
             !--------------------------------
 
             do i = 0, nprocs - 1
@@ -197,6 +199,9 @@ contains
                   m_np_i = m
                end if
 
+               !--------------------------------
+               ! Scatter positions and masses
+               !--------------------------------
                if (communicate_right) then
                   i_to_translate(1) = i
                   call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_right(i), i_translated, err)
@@ -215,7 +220,9 @@ contains
                   call mpi_bcast(m_np_i,   N, MPI_REAL_XP, i_translated(1), mpi_comm_to_left(i), err)
                end if
 
-               ! compute own interactions
+               !--------------------------------
+               ! Compute interactions
+               !--------------------------------
                a_comm_i = 0._xp
                a_comm_np_i = 0._xp
                if (rank == i) then
@@ -232,6 +239,11 @@ contains
 
                end if
 
+
+               !--------------------------------
+               ! Reduce accelerations
+               !--------------------------------
+               ! here, we get the accelerations from nodes on the right
                if (communicate_right) then
                   i_to_translate(1) = i
                   call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_right(i), i_translated, err)
@@ -241,6 +253,7 @@ contains
 
                if (rank == i) a_comm_np_i = a
 
+               ! here, we get the accelerations from nodes on the left
                if (communicate_left) then
                   i_to_translate(1) = i
                   call mpi_group_translate_ranks(wgroup, 1, i_to_translate, mpi_group_to_left(i), i_translated, err)
@@ -257,6 +270,11 @@ contains
             deallocate(m_i)
             deallocate(m_np_i)
 
+
+         !---------------------------------------------------------------------------
+         ! Compute the force using only own particles and communicating a subset to
+         ! each other to spare memory
+         !---------------------------------------------------------------------------
          else !FIXME: Does not work with different masses
             s = N / memory_factor
             if (s*memory_factor /= N) then
@@ -291,6 +309,10 @@ contains
          end if
 
       else
+         !---------------------------------------------------------------------------
+         ! Compute the force knowing all particles. Compute all the accelerations with
+         ! a local subset of all the particles, then reduce all accelerations
+         !---------------------------------------------------------------------------
          allocate(a_reduced(3, npoints))
 
          !--------------------------------
