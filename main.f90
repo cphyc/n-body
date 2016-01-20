@@ -38,6 +38,12 @@ program n_body
 
    N = npoints / nprocs
 
+   if (memory_factor * (N / memory_factor) /= N) then
+      print *, '  Memory_factor', memory_factor
+      print *, '  Number of particles per process', N
+      stop 'E: The memory factor should be a divider of the number of particles per process'
+   end if
+
    !---------------------------------------------
    ! Allocate space
    !---------------------------------------------

@@ -276,11 +276,6 @@ contains
          !---------------------------------------------------------------------------
          else
             s = N / memory_factor
-            if (s*memory_factor /= N) then
-               print*, 'E: Memory_factor', memory_factor
-               print*, 'E: Number of particles per process', N
-               stop 'E: The memory factor should be a divider of the number of particles per process'
-            end if
 
             allocate(a_comm_i(3, s))
             allocate(r_i(3, s))
