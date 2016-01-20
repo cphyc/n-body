@@ -9,7 +9,7 @@ module io_tools
 
 contains
 
-   subroutine read_init(u, read_start, read_end, m, r, v) !FIXME: Probably to be modified again when MPI_IO will be in.
+   subroutine read_init(u, read_start, read_end, m, r, v)
       implicit none
 
       integer, intent(in) :: u, read_start, read_end

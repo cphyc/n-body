@@ -54,7 +54,7 @@ program n_body
    end if
 
    !---------------------------------------------
-   ! Read initial positions                      ! FIXME: Not compatible with all code modes, and not really good in MPI_low
+   ! Read initial positions
    !---------------------------------------------
    if (flag_memory) then
       open(newunit=un, file='initial_conditions.dat', status="old")
