@@ -1,4 +1,5 @@
 #!/bin/python
+import matplotlib.pyplot as plt
 from pathlib import Path
 import pandas as pd
 
@@ -46,12 +47,12 @@ def parseOutput(outputFile, runData):
 
     runData['memoryFactor'] = int(nl().split(':')[-1])
 
-def analyseRun(path):
+def analyseRun(path, slurmPath):
     run = int(str(path).split('.')[-1])
     simulLogFile = (path / 'simul.log').open()
     paramsFile = (path / 'params.log').open()
 
-    outputFile = (callerPath / ('slurm-'+str(run)+'.out')).open()
+    outputFile = (slurmPath / ('slurm-'+str(run)+'.out')).open()
 
     runData = {}
     parseParams(paramsFile, runData)
@@ -64,7 +65,7 @@ def analyseRun(path):
 def keepRun(run):
     return run > 1
 
-if __name__ == '__main__':
+def run(runPath, slurmPath):
     data = pd.DataFrame()
     counter = 0
 
@@ -79,10 +80,10 @@ if __name__ == '__main__':
         b = b and keepRun(run)
         return b
 
-    dirList = [d for d in workPath.glob('run.*') if keepDir(d)]
+    dirList = [d for d in runPath.glob('run.*') if keepDir(d)]
     for _dir in dirList:
         # read data
-        dataDict = analyseRun(_dir)
+        dataDict = analyseRun(_dir, slurmPath)
 
         # copy data in panda data frame
         for key in dataDict.keys():
@@ -91,4 +92,5 @@ if __name__ == '__main__':
         counter += 1
 
     # do something useful with it, or not
-    print(data)
+    print(data.head())
+    return data
