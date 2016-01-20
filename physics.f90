@@ -226,7 +226,7 @@ contains
                a_comm_i = 0._xp
                a_comm_np_i = 0._xp
                if (rank == i) then
-                  call compute_force_diag(m,       r,       1, N/2, N, a)
+                  call compute_force_diag(m, r, 1, N/2, N, a)
                   a_comm_i = a(:,1:N/2)
 
                   ! compute interaction on right side
@@ -235,7 +235,7 @@ contains
 
                   ! compute interaction on left side
                else
-                  call compute_force_mpi(m_i,    r_i,    1, N/2, m,       r,       1, N, a_comm_i,    a)
+                  call compute_force_mpi(m_i, r_i, 1, N/2, m, r, 1, N, a_comm_i, a)
 
                end if
 
@@ -270,12 +270,11 @@ contains
             deallocate(m_i)
             deallocate(m_np_i)
 
-
          !---------------------------------------------------------------------------
          ! Compute the force using only own particles and communicating a subset to
          ! each other to spare memory
          !---------------------------------------------------------------------------
-         else !FIXME: Does not work with different masses
+         else
             s = N / memory_factor
             if (s*memory_factor /= N) then
                print*, 'E: Memory_factor', memory_factor
