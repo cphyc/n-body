@@ -320,7 +320,7 @@ contains
          !--------------------------------
          if (flag_diag) then
             ! Compute a(t+dt) with fast version
-            call compute_force_diag(m, r, N*rank + 1, N*(rank + 1), npoints, a)
+            call compute_force_diag(m, r, N*rank/2 + 1, N*(rank + 1)/2, npoints, a)
          else
             ! Compute a(t+dt) with slow version
             call compute_force(m, r, N*rank + 1, N*(rank + 1), r, 1, npoints, a)
@@ -454,7 +454,7 @@ contains
          Ep_loc = 0._xp
          if (flag_diag) then
             ! Compute Ec & Ep at t+dt with fast version
-            call compute_energy_diag(m, r, v, N*rank + 1, N*(rank + 1), npoints, Ec_loc, Ep_loc)
+            call compute_energy_diag(m, r, v, N*rank/2 + 1, N*(rank + 1)/2, npoints, Ec_loc, Ep_loc)
          else
             ! Compute Ec & Ep at t+dt with slow version
             call compute_energy(m, r, v, N*rank + 1, N*(rank + 1), Ec_loc, Ep_loc)
